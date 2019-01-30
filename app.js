@@ -1,5 +1,5 @@
 // 스케쥴러 모듈
-const cron = require('node-cron');
+const schedule = require('node-schedule');
 const moment = require('moment');
 
 // 스크랩 모듈
@@ -52,6 +52,11 @@ scraper.save(err => {
   if (err) throw err;
   console.log('DB 입력 성공');
 });
+*/
+/*
+class Scraper {
+  constructor() {}
+}
 */
 
 function scrapingAppInfoGooglePlay(scrapData) {
@@ -178,24 +183,66 @@ const scraping = () => {
     })
     .catch(err => {
       console.log(err);
+
+      /*
+        1. 스크랩중에 에러가 날경우 예외처리
+            일정시간(10 ~ 30분 단위로 3번 정도) 뒤에 다시 시도를 할지,
+        2. 다시 시도후에도 에러가 날경우 false 입력
+      */
     });
 };
 
 /*
-  1. https://github.com/facundoolano/google-play-scraper/issues/289
-    깃헙에 이슈 진행상황 체크해보기
-  2. 스케쥴러 동작 테스트
-    2-1. 스케쥴 시분을 랜덤으로 해서 등록하기
-    2-2. 스크랩중에 에러가 날경우 예외처리
-      일정시간(10 ~ 30분 단위로 3번 정도) 뒤에 다시 시도를 할지,
-      다시 시도후에도 에러가 날경우 false 입력
-    2-3. 리뷰 긁어오는 갯수를 총 몇페이지 가져올지 그리고 블럭 당하지 않게 하기 위에
-      페이지 도는중 셋타임으로 텀을 줘서 해야될지
+1. promise 를 await async 형태로
+2. 클래스 형태로
 */
 
+const getKSTDate = () => {
+  let date = new Date();
+  date.setTime(date.getTime() + 9 * 3600000);
+  return date;
+};
+
+const getRandom = (min, max, num) => {
+  let randomResult = [];
+  let randomList = [];
+  for (let i = min; i <= max; i++) {
+    randomList.push(i);
+  }
+  for (let i = 0; i < (num || 1); i++) {
+    let randomNumber = Math.floor(Math.random() * randomList.length);
+    randomResult.push(randomList[randomNumber]);
+    randomList.splice(randomNumber, 1);
+  }
+  return randomResult.length === 1 ? randomResult[0] : randomResult;
+};
+
+const getCronRule = () => {
+  /*
+    Cron-style Scheduling
+      '* * * * * *'
+      second (0 - 59, OPTIONAL)
+      minute (0 - 59)
+      hour (0 - 23)
+      day of month (1 - 31)
+      month (1 - 12)
+      day of week (0 - 7) (0 or 7 is Sun)
+  */
+  //테스트용
+  //let ruleArr = ['*', '*/' + getRandom(2, 6), '*', '*', '*', '*'];
+
+  //실제 적용할 크론 룰
+  // 매일 1시 ~ 3시 사이 랜덤으로 분 초 적용
+  let ruleArr = [getRandom(0, 59), getRandom(0, 59), getRandom(0, 3), '*', '*', '*'];
+
+  console.log(ruleArr.join(' '));
+  return ruleArr.join(' ');
+};
+
 //스케쥴러 등록
-cron.schedule('*/20 * * * *', () => {
-  let date = moment().format('YYYY-MM-DD HH:mm:ss');
-  console.log('# schedule running', date);
+const job = schedule.scheduleJob(getCronRule(), function() {
+  console.log('[schedule] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
   scraping();
+  job.cancel();
+  job.reschedule(getCronRule());
 });
