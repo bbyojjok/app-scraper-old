@@ -1,7 +1,8 @@
+// 스케쥴러 모듈
 const cron = require('node-cron');
 const moment = require('moment');
 
-// 스크랩
+// 스크랩 모듈
 const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
 const appStoreReviews = require('./lib/app-store-reviews');
@@ -18,23 +19,23 @@ const target = {
   }
 };
 
-// DB
+// DB 모듈
 const mongoose = require('mongoose');
 const Scraper = require('./server/models/scraper');
 
-// DB접속
+// DB 접속
 const { connection } = mongoose;
 connection.on('error', console.error);
 connection.once('open', () => {
-  console.log('Connected to mongodb server');
+  console.log('[DB] Connected to mongodb server');
 });
 mongoose.Promise = global.Promise;
 mongoose.connect(
-  'mongodb://127.0.0.1:27017/appscraper',
+  'mongodb://127.0.0.1:27017/app-scraper',
   { useNewUrlParser: true }
 );
 
-// DB저장
+// DB 저장
 /*
 let scraper = new Scraper({
   name: 'hmall',
@@ -53,43 +54,13 @@ scraper.save(err => {
 });
 */
 
-/*
-// 구글플레이 앱정보 받아오는 모듈이 구글페이지 수정이되면서 에러발생
-googlePlay
-  .app({ appId: target.hmall.googlePlayAppId })
-  .then(res => {
-    console.log('# scraping: appInfo googlePlay');
-    console.log(res);
-  })
-  .catch(err => {
-    console.log('ERROR');
-    console.log(err);
-  });
-
-googlePlay
-  .reviews({
-    appId: target.hmall.googlePlayAppId,
-    lang: 'ko',
-    sort: googlePlay.sort.NEWEST,
-    page: 0
-  })
-  .then(res => {
-    console.log('# scraping: reviews googlePlay');
-    console.log(res);
-  })
-  .catch(err => {
-    console.log('ERROR');
-    console.log(err);
-  });
-*/
-
 function scrapingAppInfoGooglePlay(scrapData) {
   return new Promise((resolve, reject) => {
     googlePlay
       .app({ appId: target.hmall.googlePlayAppId, lang: 'ko', country: 'kr' })
       .then(res => {
-        console.log('# scraping: appInfo googlePlay');
-        scrapData.app.googlePlay = res;
+        console.log('[SCRAPING] appInfo googlePlay');
+        scrapData.detail.googlePlay = res;
         resolve(scrapData);
       })
       .catch(err => {
@@ -103,8 +74,8 @@ function scrapingAppInfoAppStore(scrapData) {
     appStore
       .app({ id: target.hmall.appStoreId, country: 'kr' })
       .then(res => {
-        console.log('# scraping: appInfo appStore');
-        scrapData.app.appStore = res;
+        console.log('[SCRAPING] appInfo appStore');
+        scrapData.detail.appStore = res;
         resolve(scrapData);
       })
       .catch(err => {
@@ -113,8 +84,8 @@ function scrapingAppInfoAppStore(scrapData) {
   });
 }
 
-async function getReviewsGooglePlay(idx, reject) {
-  let reviews = await googlePlay
+function getReviewsGooglePlay(idx, reject) {
+  return googlePlay
     .reviews({
       appId: target.hmall.googlePlayAppId,
       lang: 'ko',
@@ -122,19 +93,19 @@ async function getReviewsGooglePlay(idx, reject) {
       page: idx
     })
     .then(res => {
-      console.log('# scraping: reviews googlePlay', idx);
+      console.log('[SCRAPING] reviews googlePlay, page:', idx);
       return res;
     })
     .catch(err => {
       reject(err);
     });
-  return reviews;
 }
 
 function scrapingReviewsGooglePlay(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
-    for (let i = 0; i < 4; i++) {
+    // page: 0 ~ 112
+    for (let i = 0; i < 112; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewsGooglePlay(i, reject));
     }
     scrapData.reviews.googlePlay = reviewsArr;
@@ -143,9 +114,9 @@ function scrapingReviewsGooglePlay(scrapData) {
 }
 
 function getReviewsAppStore(idx, reject) {
-  return appStoreReviews(target.hmall.appStoreId, 'kr', idx)
+  return appStoreReviews({ id: target.hmall.appStoreId, country: 'kr', page: idx })
     .then(reviews => {
-      console.log('# scraping: reviews appStore', idx);
+      console.log('[SCRAPING] reviews appStore, page:', idx);
       return reviews;
     })
     .catch(err => {
@@ -156,20 +127,20 @@ function getReviewsAppStore(idx, reject) {
 function scrapingReviewsAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
-    for (let i = 1; i < 5; i++) {
+    // page: 1 ~ 10
+    for (let i = 1; i <= 10; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewsAppStore(i, reject));
     }
-    console.log(reviewsArr.length);
     scrapData.reviews.appStore = reviewsArr;
     resolve(scrapData);
   });
 }
 
 const scraping = () => {
-  console.log('# scraping: start!!');
+  console.log('[SCRAPING] start !!');
   const scrapData = {
     name: target.hmall.name,
-    app: {
+    detail: {
       googlePlay: null,
       appStore: null
     },
@@ -184,14 +155,25 @@ const scraping = () => {
     .then(scrapingReviewsGooglePlay)
     .then(scrapingReviewsAppStore)
     .then(scrapData => {
-      console.log('## scraping: success!!');
+      console.log('[SCRAPING] success !!');
       //console.log(scrapData);
 
-      // DB insert
+      console.log(
+        '[SCRAPING] scrapData.reviews.googlePlay.length:',
+        scrapData.reviews.googlePlay.length
+      );
+
+      console.log(
+        '[SCRAPING] scrapData.reviews.appStore.length:',
+        scrapData.reviews.appStore.length
+      );
+
+      // DB save
       let scraper = new Scraper(scrapData);
       scraper.save(err => {
         if (err) throw err;
-        console.log('DB 저장 성공');
+        let date = moment().format('YYYY-MM-DD HH:mm:ss');
+        console.log('[SCRAPING] database saved !!', date);
       });
     })
     .catch(err => {
@@ -199,12 +181,21 @@ const scraping = () => {
     });
 };
 
-//scraping();
-scrapingReviewsAppStore();
+/*
+  1. https://github.com/facundoolano/google-play-scraper/issues/289
+    깃헙에 이슈 진행상황 체크해보기
+  2. 스케쥴러 동작 테스트
+    2-1. 스케쥴 시분을 랜덤으로 해서 등록하기
+    2-2. 스크랩중에 에러가 날경우 예외처리
+      일정시간(10 ~ 30분 단위로 3번 정도) 뒤에 다시 시도를 할지,
+      다시 시도후에도 에러가 날경우 false 입력
+    2-3. 리뷰 긁어오는 갯수를 총 몇페이지 가져올지 그리고 블럭 당하지 않게 하기 위에
+      페이지 도는중 셋타임으로 텀을 줘서 해야될지
+*/
 
-// 스케쥴러 등록
-// cron.schedule('*/2 * * * *', () => {
-//   let date = moment().format('YYYY-MM-DD HH:mm:ss');
-//   console.log('# schedule running', date);
-//   scraping();
-// });
+//스케쥴러 등록
+cron.schedule('*/20 * * * *', () => {
+  let date = moment().format('YYYY-MM-DD HH:mm:ss');
+  console.log('# schedule running', date);
+  scraping();
+});

@@ -9,7 +9,7 @@ const getKSTDate = () => {
 
 const Scraper = new Schema({
   name: String,
-  app: {
+  detail: {
     googlePlay: Schema.Types.Mixed,
     appStore: Schema.Types.Mixed
   },
