@@ -17,6 +17,10 @@ const Scraper = new Schema({
     googlePlay: Schema.Types.Mixed,
     appStore: Schema.Types.Mixed
   },
+  error: {
+    log: String,
+    where: String
+  },
   created: { type: Date, default: getKSTDate() },
   updated: { type: Date }
 });
