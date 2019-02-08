@@ -62,8 +62,130 @@ function strToDate(str) {
     .format();
 }
 
-function getReviewGooglePlay(idx, reject, scrapData) {
-  return googlePlay
+function deepCompare() {
+  var i, l, leftChain, rightChain;
+
+  function compare2Objects(x, y) {
+    var p;
+
+    // remember that NaN === NaN returns false
+    // and isNaN(undefined) returns true
+    if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
+      return true;
+    }
+
+    // Compare primitives and functions.
+    // Check if both arguments link to the same object.
+    // Especially useful on the step where we compare prototypes
+    if (x === y) {
+      return true;
+    }
+
+    // Works in case when functions are created in constructor.
+    // Comparing dates is a common scenario. Another built-ins?
+    // We can even handle functions passed across iframes
+    if (
+      (typeof x === 'function' && typeof y === 'function') ||
+      (x instanceof Date && y instanceof Date) ||
+      (x instanceof RegExp && y instanceof RegExp) ||
+      (x instanceof String && y instanceof String) ||
+      (x instanceof Number && y instanceof Number)
+    ) {
+      return x.toString() === y.toString();
+    }
+
+    // At last checking prototypes as good as we can
+    if (!(x instanceof Object && y instanceof Object)) {
+      return false;
+    }
+
+    if (x.isPrototypeOf(y) || y.isPrototypeOf(x)) {
+      return false;
+    }
+
+    if (x.constructor !== y.constructor) {
+      return false;
+    }
+
+    if (x.prototype !== y.prototype) {
+      return false;
+    }
+
+    // Check for infinitive linking loops
+    if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
+      return false;
+    }
+
+    // Quick checking of one object being a subset of another.
+    // todo: cache the structure of arguments[0] for performance
+    for (p in y) {
+      if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+        return false;
+      } else if (typeof y[p] !== typeof x[p]) {
+        return false;
+      }
+    }
+
+    for (p in x) {
+      if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+        return false;
+      } else if (typeof y[p] !== typeof x[p]) {
+        return false;
+      }
+
+      switch (typeof x[p]) {
+        case 'object':
+        case 'function':
+          leftChain.push(x);
+          rightChain.push(y);
+
+          if (!compare2Objects(x[p], y[p])) {
+            return false;
+          }
+
+          leftChain.pop();
+          rightChain.pop();
+          break;
+
+        default:
+          if (x[p] !== y[p]) {
+            return false;
+          }
+          break;
+      }
+    }
+
+    return true;
+  }
+
+  if (arguments.length < 1) {
+    return true; //Die silently? Don't know how to handle such case, please help...
+    // throw "Need two or more arguments to compare";
+  }
+
+  for (i = 1, l = arguments.length; i < l; i++) {
+    leftChain = []; //Todo: this can be cached
+    rightChain = [];
+
+    if (!compare2Objects(arguments[0], arguments[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function undefinedToNull(obj) {
+  for (let propName in obj) {
+    if (obj[propName] === undefined) {
+      obj[propName] = null;
+    }
+  }
+  return obj;
+}
+
+async function getReviewGooglePlay(idx, reject, scrapData) {
+  return await googlePlay
     .reviews({
       appId: target.hmall.googlePlayAppId,
       lang: 'ko',
@@ -84,7 +206,7 @@ function scrapingReviewGooglePlay(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 0 ~ 112
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 2; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject));
     }
 
@@ -95,34 +217,36 @@ function scrapingReviewGooglePlay(scrapData) {
       });
 
       if (queryResult) {
-        const updateResult = await Review.findOneAndUpdate(
-          { 'review.id': data.id },
-          {
-            $set: {
-              review: data,
-              date: await strToDate(data.date),
-              updated: await moment()
-                .tz('Asia/Seoul')
-                .format()
+        if (!(await deepCompare(queryResult.review, await undefinedToNull(data)))) {
+          await Review.findOneAndUpdate(
+            { 'review.id': data.id },
+            {
+              $set: {
+                review: await undefinedToNull(data),
+                date: await strToDate(data.date),
+                updated: await moment()
+                  .tz('Asia/Seoul')
+                  .format()
+              }
+            },
+            { new: true },
+            err => {
+              if (err) throw err;
             }
-          },
-          { new: true },
-          err => {
-            if (err) throw err;
-          }
-        );
-        await console.log('[DB] reviews googlePlay, 중복된 리뷰 업데이트', idx);
+          );
+          await console.log('[DB] reviews googlePlay, 중복된 리뷰 업데이트', idx);
+        }
       } else {
         await accumulator.push({
           name: target.hmall.name,
-          review: data,
+          review: await undefinedToNull(data),
           os: 'android',
           date: await strToDate(data.date),
           created: await moment()
             .tz('Asia/Seoul')
             .format()
         });
-        console.log('[SCRAPING] reviews googlePlay, 중복되지 않는 리뷰', idx);
+        await console.log('[SCRAPING] reviews googlePlay, 중복되지 않는 리뷰', idx);
       }
 
       return Promise.resolve(accumulator);
@@ -134,7 +258,10 @@ function scrapingReviewGooglePlay(scrapData) {
           console.log('[SCRAPING] 안드로이드 리뷰 신규 스크랩된 갯수:', androidReview.length);
           Review.insertMany(androidReview, (err, docs) => {
             if (err) throw err;
-            console.log('[DB] scraping data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+            console.log(
+              '[DB] scraping review data saved !!',
+              moment().format('YYYY-MM-DD HH:mm:ss')
+            );
             resolve(scrapData);
           });
         } else {
@@ -149,8 +276,8 @@ function scrapingReviewGooglePlay(scrapData) {
   });
 }
 
-function getReviewAppStore(idx, reject, scrapData) {
-  return appStoreReviews({ id: target.hmall.appStoreId, country: 'kr', page: idx })
+async function getReviewAppStore(idx, reject, scrapData) {
+  return await appStoreReviews({ id: target.hmall.appStoreId, country: 'kr', page: idx })
     .then(reviews => {
       console.log('[SCRAPING] reviews appStore, page:', idx);
       return reviews;
@@ -165,7 +292,7 @@ function scrapingReviewAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 1 ~ 10
-    for (let i = 1; i <= 1; i++) {
+    for (let i = 1; i <= 2; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewAppStore(i, reject, scrapData));
     }
 
@@ -176,34 +303,36 @@ function scrapingReviewAppStore(scrapData) {
       });
 
       if (queryResult) {
-        const updateResult = await Review.findOneAndUpdate(
-          { 'review.id': data.id },
-          {
-            $set: {
-              review: data,
-              date: await strToDate(data.updated),
-              updated: await moment()
-                .tz('Asia/Seoul')
-                .format()
+        if (!(await deepCompare(queryResult.review, await undefinedToNull(data)))) {
+          await Review.findOneAndUpdate(
+            { 'review.id': data.id },
+            {
+              $set: {
+                review: await undefinedToNull(data),
+                date: await strToDate(data.updated),
+                updated: await moment()
+                  .tz('Asia/Seoul')
+                  .format()
+              }
+            },
+            { new: true },
+            err => {
+              if (err) throw err;
             }
-          },
-          { new: true },
-          err => {
-            if (err) throw err;
-          }
-        );
-        await console.log('[DB] reviews appStore, 중복된 리뷰 업데이트', idx);
+          );
+          await console.log('[DB] reviews appStore, 중복된 리뷰 업데이트', idx);
+        }
       } else {
         await accumulator.push({
           name: target.hmall.name,
-          review: data,
+          review: await undefinedToNull(data),
           os: 'ios',
           date: await strToDate(data.updated),
           created: await moment()
             .tz('Asia/Seoul')
             .format()
         });
-        console.log('[SCRAPING] reviews appStore, 중복되지 않는 리뷰', idx);
+        await console.log('[SCRAPING] reviews appStore, 중복되지 않는 리뷰', idx);
       }
 
       return Promise.resolve(accumulator);
@@ -215,7 +344,10 @@ function scrapingReviewAppStore(scrapData) {
           console.log('[SCRAPING] ios 리뷰 신규 스크랩된 갯수:', iosReview.length);
           Review.insertMany(iosReview, (err, docs) => {
             if (err) throw err;
-            console.log('[DB] scraping data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+            console.log(
+              '[DB] scraping review data saved !!',
+              moment().format('YYYY-MM-DD HH:mm:ss')
+            );
             resolve(scrapData);
           });
         } else {
@@ -266,7 +398,11 @@ let job;
 let errorCount = 0;
 
 function scraping() {
-  console.log('[SCRAPING] start');
+  console.log(`
+================================================================
+    [SCRAPING] start
+================================================================
+  `);
   scrapingDetailGooglePlay({
     detail: {
       name: target.hmall.name,
@@ -293,7 +429,7 @@ function scraping() {
       let detail = new Detail(scrapData.detail);
       detail.save(err => {
         if (err) throw err;
-        console.log('[DB] scraping data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+        console.log('[DB] scraping detail data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
       });
     })
     .catch(({ err, scrapData }) => {
@@ -315,7 +451,7 @@ function scraping() {
         let detail = new Detail(scrapData.detail);
         detail.save(err => {
           if (err) throw err;
-          console.log('[DB] scraping data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+          console.log('[DB] scraping detail data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
           // 5시간 이후 다시 스케쥴 등록
           setTimeout(() => {
             job.reschedule(getCronRule());
@@ -335,18 +471,18 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  scraping();
+  // scraping();
 
   // 스케쥴 등록
-  // job = schedule.scheduleJob(getCronRule(), () => {
-  //   console.log('[SCHEDULE] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
-  //   scraping();
-  //   job.cancel();
-  //   // 5시간 이후 다시 스케쥴 등록
-  //   setTimeout(() => {
-  //     job.reschedule(getCronRule());
-  //   }, 1000 * 60 * 60 * 5);
-  // });
+  job = schedule.scheduleJob(getCronRule(), () => {
+    console.log('[SCHEDULE] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
+    scraping();
+    job.cancel();
+    // 5시간 이후 다시 스케쥴 등록
+    setTimeout(() => {
+      job.reschedule(getCronRule());
+    }, 1000 * 60 * 60 * 5);
+  });
 }
 
 module.exports = scheduler;

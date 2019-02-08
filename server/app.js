@@ -8,11 +8,10 @@ const morgan = require('morgan');
 const cors = require('cors');
 const route = require('./routes');
 const scheduler = require('../schedule/app');
-const mongoose = require('mongoose');
 const port = 999;
-
-// DB 접속
+const mongoose = require('mongoose');
 const { connection } = mongoose;
+
 connection.on('error', console.error);
 connection.once('open', () => {
   console.log('[DB] Connected to mongodb server');
