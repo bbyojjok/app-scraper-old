@@ -7,7 +7,7 @@ route.get('/', (req, res) => {
   res.send('hello world');
 });
 
-route.get('/find/:from?/:to?/:os?', async (req, res) => {
+route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   const today = moment()
     .startOf('day')
     .format();
@@ -33,16 +33,6 @@ route.get('/find/:from?/:to?/:os?', async (req, res) => {
         : today
       : today;
   const os = req.params.os;
-
-  console.log('=====================================');
-  console.log('from:', from);
-  console.log('to:', to);
-  console.log('today:', today);
-  console.log('end:', end);
-  console.log('prevday:', prevday);
-  console.log('os:', os);
-  console.log('=====================================');
-
   const options = {
     date: {
       $gte: from,
@@ -52,6 +42,15 @@ route.get('/find/:from?/:to?/:os?', async (req, res) => {
   if (os) {
     options.os = os;
   }
+
+  console.log('=====================================');
+  console.log('from:', from);
+  console.log('to:', to);
+  console.log('today:', today);
+  console.log('end:', end);
+  console.log('prevday:', prevday);
+  console.log('os:', os);
+  console.log('=====================================');
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);

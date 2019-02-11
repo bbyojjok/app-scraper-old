@@ -18,8 +18,22 @@ const target = {
     appStoreId: 1067693191
   }
 };
-let job;
-let errorCount = 0;
+let scrapJob;
+let scrapError = 0;
+
+function getRandom(min, max, num) {
+  let randomResult = [];
+  let randomList = [];
+  for (let i = min; i <= max; i++) {
+    randomList.push(i);
+  }
+  for (let i = 0; i < (num || 1); i++) {
+    let randomNumber = Math.floor(Math.random() * randomList.length);
+    randomResult.push(randomList[randomNumber]);
+    randomList.splice(randomNumber, 1);
+  }
+  return randomResult.length === 1 ? randomResult[0] : randomResult;
+}
 
 function strToDate(str) {
   const result = str
@@ -137,7 +151,7 @@ function deepCompare() {
 function undefinedToNull(obj) {
   return Object.keys(obj).reduce((newObj, k) => {
     if (typeof obj[k] === 'object') {
-      Object.assign(newObj, { [k]: testUndefinedToNull(obj[k]) });
+      Object.assign(newObj, { [k]: undefinedToNull(obj[k]) });
     } else {
       Object.assign(newObj, { [k]: obj[k] === undefined ? null : obj[k] });
     }
@@ -261,10 +275,7 @@ function scrapingReviewGooglePlay(scrapData) {
           console.log('[SCRAPING] 안드로이드 리뷰 신규 스크랩된 갯수:', androidReview.length);
           Review.insertMany(androidReview, (err, docs) => {
             if (err) throw err;
-            console.log(
-              '[DB] scraping review data saved !!',
-              moment().format('YYYY-MM-DD HH:mm:ss')
-            );
+            console.log('[DB] scraping review data saved', moment().format('YYYY-MM-DD HH:mm:ss'));
             resolve(scrapData);
           });
         } else {
@@ -357,10 +368,7 @@ function scrapingReviewAppStore(scrapData) {
           console.log('[SCRAPING] ios 리뷰 신규 스크랩된 갯수:', iosReview.length);
           Review.insertMany(iosReview, (err, docs) => {
             if (err) throw err;
-            console.log(
-              '[DB] scraping review data saved !!',
-              moment().format('YYYY-MM-DD HH:mm:ss')
-            );
+            console.log('[DB] scraping review data saved', moment().format('YYYY-MM-DD HH:mm:ss'));
             resolve(scrapData);
           });
         } else {
@@ -375,21 +383,7 @@ function scrapingReviewAppStore(scrapData) {
   });
 }
 
-const getRandom = (min, max, num) => {
-  let randomResult = [];
-  let randomList = [];
-  for (let i = min; i <= max; i++) {
-    randomList.push(i);
-  }
-  for (let i = 0; i < (num || 1); i++) {
-    let randomNumber = Math.floor(Math.random() * randomList.length);
-    randomResult.push(randomList[randomNumber]);
-    randomList.splice(randomNumber, 1);
-  }
-  return randomResult.length === 1 ? randomResult[0] : randomResult;
-};
-
-const getCronRule = () => {
+function getCronRule() {
   /*
     #Cron-style Scheduling
       '* * * * * *'
@@ -404,7 +398,7 @@ const getCronRule = () => {
   let rule = [getRandom(0, 59), getRandom(0, 59), getRandom(0, 4), '*', '*', '*'].join(' ');
   console.log('[CRON] rule:', rule);
   return rule;
-};
+}
 
 function scraping() {
   console.log(`
@@ -437,7 +431,7 @@ function scraping() {
     .then(scrapingReviewGooglePlay)
     .then(scrapingReviewAppStore)
     .then(scrapData => {
-      errorCount = 0;
+      scrapError = 0;
 
       // DB save
       scrapData.detail.created = moment()
@@ -446,20 +440,20 @@ function scraping() {
       let detail = new Detail(scrapData.detail);
       detail.save(err => {
         if (err) throw err;
-        console.log('[DB] scraping detail data saved !!');
+        console.log('[DB] scraping detail data saved');
         console.log('[SCRAPING] success', moment().format('YYYY-MM-DD HH:mm:ss'));
       });
     })
     .catch(({ err, scrapData }) => {
-      job.cancel();
+      scrapJob.cancel();
       console.log(err);
-      errorCount++;
-      console.log('errorCount:', errorCount);
+      scrapError++;
+      console.log('scrapError:', scrapError);
 
-      if (errorCount > 3) {
+      if (scrapError > 3) {
         console.log('에러 카운트가 4번 이상이면 에러내용을 데이터에 저장하고 스케쥴 재등록');
         // 에러 카운트가 4번 이상이면 에러내용을 데이터에 저장하고 스케쥴 재등록
-        errorCount = 0;
+        scrapError = 0;
 
         // DB save
         scrapData.detail.created = moment()
@@ -468,7 +462,7 @@ function scraping() {
         let detail = new Detail(scrapData.detail);
         detail.save(err => {
           if (err) throw err;
-          console.log('[DB] scraping detail data saved !!');
+          console.log('[DB] scraping detail data saved');
           console.log(
             '[SCRAPING] 에러 4번 발견됨 확인바람',
             moment().format('YYYY-MM-DD HH:mm:ss')
@@ -476,7 +470,7 @@ function scraping() {
 
           // 5시간 이후 다시 스케쥴 등록
           setTimeout(() => {
-            job.reschedule(getCronRule());
+            scrapJob.reschedule(getCronRule());
           }, 1000 * 60 * 60 * 5);
         });
       } else {
@@ -493,17 +487,17 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  scraping();
+  //scraping();
 
   // 스케쥴 등록
-  // job = schedule.scheduleJob(getCronRule(), () => {
-  //   scraping();
-  //   job.cancel();
-  //   // 5시간 이후 다시 스케쥴 등록
-  //   setTimeout(() => {
-  //     job.reschedule(getCronRule());
-  //   }, 1000 * 60 * 60 * 5);
-  // });
+  scrapJob = schedule.scheduleJob(getCronRule(), () => {
+    scraping();
+    scrapJob.cancel();
+    // 5시간 이후 다시 스케쥴 등록
+    setTimeout(() => {
+      scrapJob.reschedule(getCronRule());
+    }, 1000 * 60 * 60 * 5);
+  });
 }
 
 module.exports = scheduler;
