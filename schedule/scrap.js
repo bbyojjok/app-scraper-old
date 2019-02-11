@@ -190,7 +190,7 @@ async function getReviewGooglePlay(idx, reject, scrapData) {
       return res;
     })
     .catch(err => {
-      scrapData.review.googlePlay = false;
+      scrapData.review.googlePlay.error = false;
       reject({ err, scrapData });
     });
 }
@@ -211,7 +211,7 @@ function scrapingReviewGooglePlay(scrapData) {
 
       if (queryResult) {
         if (!(await deepCompare(queryResult.review, await undefinedToNull(data)))) {
-          await Review.findOneAndUpdate(
+          const updateResult = await Review.findOneAndUpdate(
             { 'review.id': data.id },
             {
               $set: {
@@ -227,6 +227,7 @@ function scrapingReviewGooglePlay(scrapData) {
               if (err) throw err;
             }
           );
+          await scrapData.review.googlePlay.update.push(updateResult);
           await console.log('[DB] reviews googlePlay, 중복된 리뷰 업데이트', idx);
         }
       } else {
@@ -247,6 +248,15 @@ function scrapingReviewGooglePlay(scrapData) {
 
     Promise.all(androidReview)
       .then(androidReview => {
+        if (scrapData.review.googlePlay.update !== null) {
+          console.log(
+            '[SCRAPING] 안드로이드 리뷰 업데이트된 갯수:',
+            scrapData.review.googlePlay.update.length
+          );
+        } else {
+          console.log('[SCRAPING] 안드로이드 리뷰 업데이트된 부분이 없음!!');
+        }
+
         if (androidReview.length > 0) {
           console.log('[SCRAPING] 안드로이드 리뷰 신규 스크랩된 갯수:', androidReview.length);
           Review.insertMany(androidReview, (err, docs) => {
@@ -263,7 +273,7 @@ function scrapingReviewGooglePlay(scrapData) {
         }
       })
       .catch(err => {
-        scrapData.review.googlePlay = false;
+        scrapData.review.googlePlay.error = false;
         reject({ err, scrapData });
       });
   });
@@ -276,7 +286,7 @@ async function getReviewAppStore(idx, reject, scrapData) {
       return reviews;
     })
     .catch(err => {
-      scrapData.reviews.appStore = false;
+      scrapData.review.appStore.error = false;
       reject({ err, scrapData });
     });
 }
@@ -297,7 +307,7 @@ function scrapingReviewAppStore(scrapData) {
 
       if (queryResult) {
         if (!(await deepCompare(queryResult.review, await undefinedToNull(data)))) {
-          await Review.findOneAndUpdate(
+          const updateResult = await Review.findOneAndUpdate(
             { 'review.id': data.id },
             {
               $set: {
@@ -313,6 +323,7 @@ function scrapingReviewAppStore(scrapData) {
               if (err) throw err;
             }
           );
+          await scrapData.review.appStore.update.push(updateResult);
           await console.log('[DB] reviews appStore, 중복된 리뷰 업데이트', idx);
         }
       } else {
@@ -333,6 +344,15 @@ function scrapingReviewAppStore(scrapData) {
 
     Promise.all(iosReview)
       .then(iosReview => {
+        if (scrapData.review.appStore.update !== null) {
+          console.log(
+            '[SCRAPING] ios 리뷰 업데이트된 갯수:',
+            scrapData.review.appStore.update.length
+          );
+        } else {
+          console.log('[SCRAPING] ios 리뷰 업데이트된 부분이 없음!!');
+        }
+
         if (iosReview.length > 0) {
           console.log('[SCRAPING] ios 리뷰 신규 스크랩된 갯수:', iosReview.length);
           Review.insertMany(iosReview, (err, docs) => {
@@ -349,7 +369,7 @@ function scrapingReviewAppStore(scrapData) {
         }
       })
       .catch(err => {
-        scrapData.reviews.appStore = false;
+        scrapData.review.appStore.error = false;
         reject({ err, scrapData });
       });
   });
@@ -391,6 +411,7 @@ function scraping() {
 ================================================================
 
   [SCRAPING] start
+  ${moment().format('YYYY-MM-DD HH:mm:ss')}
 
 ================================================================
   `);
@@ -402,15 +423,20 @@ function scraping() {
       created: null
     },
     review: {
-      googlePlay: null,
-      appStore: null
+      googlePlay: {
+        update: null,
+        error: null
+      },
+      appStore: {
+        update: null,
+        error: null
+      }
     }
   })
     .then(scrapingDetailAppStore)
     .then(scrapingReviewGooglePlay)
     .then(scrapingReviewAppStore)
     .then(scrapData => {
-      console.log('[SCRAPING] success');
       errorCount = 0;
 
       // DB save
@@ -420,15 +446,15 @@ function scraping() {
       let detail = new Detail(scrapData.detail);
       detail.save(err => {
         if (err) throw err;
-        console.log('[DB] scraping detail data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+        console.log('[DB] scraping detail data saved !!');
+        console.log('[SCRAPING] success', moment().format('YYYY-MM-DD HH:mm:ss'));
       });
     })
     .catch(({ err, scrapData }) => {
+      job.cancel();
       console.log(err);
-
       errorCount++;
       console.log('errorCount:', errorCount);
-      job.cancel();
 
       if (errorCount > 3) {
         console.log('에러 카운트가 4번 이상이면 에러내용을 데이터에 저장하고 스케쥴 재등록');
@@ -442,7 +468,12 @@ function scraping() {
         let detail = new Detail(scrapData.detail);
         detail.save(err => {
           if (err) throw err;
-          console.log('[DB] scraping detail data saved !!', moment().format('YYYY-MM-DD HH:mm:ss'));
+          console.log('[DB] scraping detail data saved !!');
+          console.log(
+            '[SCRAPING] 에러 4번 발견됨 확인바람',
+            moment().format('YYYY-MM-DD HH:mm:ss')
+          );
+
           // 5시간 이후 다시 스케쥴 등록
           setTimeout(() => {
             job.reschedule(getCronRule());
@@ -466,7 +497,6 @@ function scheduler() {
 
   // 스케쥴 등록
   // job = schedule.scheduleJob(getCronRule(), () => {
-  //   console.log('[SCHEDULE] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
   //   scraping();
   //   job.cancel();
   //   // 5시간 이후 다시 스케쥴 등록
