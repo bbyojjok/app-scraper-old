@@ -165,11 +165,11 @@ function scrapingDetailGooglePlay(scrapData) {
       .app({ appId: target.hmall.googlePlayAppId, lang: 'ko', country: 'kr' })
       .then(res => {
         console.log('[SCRAPING] detail googlePlay');
-        scrapData.detail.googlePlay = res;
+        scrapData.detail.android = res;
         resolve(scrapData);
       })
       .catch(err => {
-        scrapData.detail.googlePlay = false;
+        scrapData.detail.android = false;
         reject({ err, scrapData });
       });
   });
@@ -181,11 +181,11 @@ function scrapingDetailAppStore(scrapData) {
       .app({ id: target.hmall.appStoreId, country: 'kr' })
       .then(res => {
         console.log('[SCRAPING] detail appStore');
-        scrapData.detail.appStore = res;
+        scrapData.detail.ios = res;
         resolve(scrapData);
       })
       .catch(err => {
-        scrapData.detail.appStore = false;
+        scrapData.detail.ios = false;
         reject({ err, scrapData });
       });
   });
@@ -412,8 +412,8 @@ function scraping() {
   scrapingDetailGooglePlay({
     detail: {
       name: target.hmall.name,
-      googlePlay: null,
-      appStore: null,
+      android: null,
+      ios: null,
       created: null
     },
     review: {
@@ -487,7 +487,7 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  //scraping();
+  // scraping();
 
   // 스케쥴 등록
   scrapJob = schedule.scheduleJob(getCronRule(), () => {

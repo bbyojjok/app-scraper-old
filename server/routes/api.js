@@ -1,21 +1,67 @@
 const route = require('express').Router();
-const { Review } = require('../models/index');
+const { Detail, Review } = require('../models/index');
 const moment = require('moment');
 moment.locale('ko');
 
-route.get('/', (req, res) => {
-  res.send('hello world');
+route.get('/details/:os?', async (req, res) => {
+  const os = req.params.os;
+  const queryResult = await Detail.findOne({}, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ created: -1 });
+  if (os) {
+    res.send(queryResult[os]);
+  } else {
+    res.send(queryResult);
+  }
+});
+
+route.get('/review/:date?/:score?/:os?', async (req, res) => {
+  const date = req.params.date;
+  const score = req.params.score;
+  const os = req.params.os;
+  const today = moment()
+    .startOf('day')
+    .format();
+  const prevday = moment(today)
+    .subtract(date, 'days')
+    .format();
+
+  const options = {
+    date: {
+      $gte: prevday,
+      $lte: today
+    },
+    $or: [
+      {
+        'review.rate': score
+      },
+      {
+        'review.score': score
+      }
+    ]
+  };
+  if (os) {
+    options.os = os;
+  }
+  console.log(options);
+
+  const queryResult = await Review.find(options, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ date: -1 });
+
+  console.log(queryResult);
+  res.send(queryResult);
 });
 
 route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   const today = moment()
     .startOf('day')
     .format();
-  const end = moment()
-    .endOf('day')
-    .format();
   const prevday = moment(today)
     .subtract(1, 'days')
+    .format();
+  const end = moment()
+    .endOf('day')
     .format();
 
   const from =
@@ -44,17 +90,16 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   }
 
   console.log('=====================================');
-  console.log('from:', from);
-  console.log('to:', to);
   console.log('today:', today);
   console.log('end:', end);
   console.log('prevday:', prevday);
-  console.log('os:', os);
+  console.log('options', options);
   console.log('=====================================');
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
-  });
+  }).sort({ date: -1 });
+
   //console.log(queryResult);
   res.send(queryResult);
 });

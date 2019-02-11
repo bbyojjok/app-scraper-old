@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AppScraper</title>
+    <link rel="stylesheet" href="/ui.css" />
+  </head>
+  <body>
+    <div id="wrap">
+      <h1>app-scraper</h1>
+
+      <div class="btnBox">
+        <div>
+          <label><input type="radio" name="score" checked="checked" value="1" />평점1</label>
+          <label><input type="radio" name="score" value="2" />평점2</label>
+          <label><input type="radio" name="score" value="3" />평점3</label>
+          <label><input type="radio" name="score" value="4" />평점4</label>
+          <label><input type="radio" name="score" value="5" />평점5</label>
+        </div>
+
+        <div>
+          <label><input type="radio" name="date" checked="checked" value="7" />7일</label>
+          <label><input type="radio" name="date" value="15" />15일</label>
+          <label><input type="radio" name="date" value="30" />30일</label>
+          <label><input type="radio" name="date" value="90" />90일</label>
+          <label><input type="radio" name="date" value="180" />180일</label>
+        </div>
+
+        <div>
+          <button id="requestBtn">확인</button>
+        </div>
+      </div>
+      <div class="reviewsWrap">
+        <div>
+          <h2>reviews android [date: 2019.02.01 ~ today]</h2>
+          <ul class="reviews android"></ul>
+          <button class="_more">더보기 (15/2,888)</button>
+        </div>
+        <div>
+          <h2>reviews ios [date: 2019.02.01 ~ today]</h2>
+          <ul class="reviews ios"></ul>
+          <button class="_more">더보기 (15/2,888)</button>
+        </div>
+      </div>
+
+      <!--       
+      <h2>details android</h2>
+      <ul class="details android"></ul>
+
+      <h2>details ios</h2>
+      <ul class="details ios"></ul>
+      -->
+    </div>
+
+    <script src="/jquery-2.2.0.min.js"></script>
+    <script src="/ui.js"></script>
+  </body>
+</html>
