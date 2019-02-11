@@ -2,9 +2,10 @@ const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
 const appStoreReviews = require('../lib/app-store-reviews');
 const schedule = require('node-schedule');
+const { Detail, Review } = require('../server/models');
 const moment = require('moment');
 moment.locale('ko');
-const { Detail, Review } = require('../server/models');
+
 const target = {
   hmall: {
     name: 'hmall',
@@ -17,38 +18,8 @@ const target = {
     appStoreId: 1067693191
   }
 };
-
-function scrapingDetailGooglePlay(scrapData) {
-  return new Promise((resolve, reject) => {
-    googlePlay
-      .app({ appId: target.hmall.googlePlayAppId, lang: 'ko', country: 'kr' })
-      .then(res => {
-        console.log('[SCRAPING] detail googlePlay');
-        scrapData.detail.googlePlay = res;
-        resolve(scrapData);
-      })
-      .catch(err => {
-        scrapData.detail.googlePlay = false;
-        reject({ err, scrapData });
-      });
-  });
-}
-
-function scrapingDetailAppStore(scrapData) {
-  return new Promise((resolve, reject) => {
-    appStore
-      .app({ id: target.hmall.appStoreId, country: 'kr' })
-      .then(res => {
-        console.log('[SCRAPING] detail appStore');
-        scrapData.detail.appStore = res;
-        resolve(scrapData);
-      })
-      .catch(err => {
-        scrapData.detail.appStore = false;
-        reject({ err, scrapData });
-      });
-  });
-}
+let job;
+let errorCount = 0;
 
 function strToDate(str) {
   const result = str
@@ -68,22 +39,14 @@ function deepCompare() {
   function compare2Objects(x, y) {
     var p;
 
-    // remember that NaN === NaN returns false
-    // and isNaN(undefined) returns true
     if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
       return true;
     }
 
-    // Compare primitives and functions.
-    // Check if both arguments link to the same object.
-    // Especially useful on the step where we compare prototypes
     if (x === y) {
       return true;
     }
 
-    // Works in case when functions are created in constructor.
-    // Comparing dates is a common scenario. Another built-ins?
-    // We can even handle functions passed across iframes
     if (
       (typeof x === 'function' && typeof y === 'function') ||
       (x instanceof Date && y instanceof Date) ||
@@ -111,13 +74,10 @@ function deepCompare() {
       return false;
     }
 
-    // Check for infinitive linking loops
     if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
       return false;
     }
 
-    // Quick checking of one object being a subset of another.
-    // todo: cache the structure of arguments[0] for performance
     for (p in y) {
       if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
         return false;
@@ -159,12 +119,11 @@ function deepCompare() {
   }
 
   if (arguments.length < 1) {
-    return true; //Die silently? Don't know how to handle such case, please help...
-    // throw "Need two or more arguments to compare";
+    return true;
   }
 
   for (i = 1, l = arguments.length; i < l; i++) {
-    leftChain = []; //Todo: this can be cached
+    leftChain = [];
     rightChain = [];
 
     if (!compare2Objects(arguments[0], arguments[i])) {
@@ -176,12 +135,46 @@ function deepCompare() {
 }
 
 function undefinedToNull(obj) {
-  for (let propName in obj) {
-    if (obj[propName] === undefined) {
-      obj[propName] = null;
+  return Object.keys(obj).reduce((newObj, k) => {
+    if (typeof obj[k] === 'object') {
+      Object.assign(newObj, { [k]: testUndefinedToNull(obj[k]) });
+    } else {
+      Object.assign(newObj, { [k]: obj[k] === undefined ? null : obj[k] });
     }
-  }
-  return obj;
+    return newObj;
+  }, {});
+}
+
+function scrapingDetailGooglePlay(scrapData) {
+  return new Promise((resolve, reject) => {
+    googlePlay
+      .app({ appId: target.hmall.googlePlayAppId, lang: 'ko', country: 'kr' })
+      .then(res => {
+        console.log('[SCRAPING] detail googlePlay');
+        scrapData.detail.googlePlay = res;
+        resolve(scrapData);
+      })
+      .catch(err => {
+        scrapData.detail.googlePlay = false;
+        reject({ err, scrapData });
+      });
+  });
+}
+
+function scrapingDetailAppStore(scrapData) {
+  return new Promise((resolve, reject) => {
+    appStore
+      .app({ id: target.hmall.appStoreId, country: 'kr' })
+      .then(res => {
+        console.log('[SCRAPING] detail appStore');
+        scrapData.detail.appStore = res;
+        resolve(scrapData);
+      })
+      .catch(err => {
+        scrapData.detail.appStore = false;
+        reject({ err, scrapData });
+      });
+  });
 }
 
 async function getReviewGooglePlay(idx, reject, scrapData) {
@@ -206,7 +199,7 @@ function scrapingReviewGooglePlay(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 0 ~ 112
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject));
     }
 
@@ -292,7 +285,7 @@ function scrapingReviewAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 1 ~ 10
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= 1; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewAppStore(i, reject, scrapData));
     }
 
@@ -393,14 +386,12 @@ const getCronRule = () => {
   return rule;
 };
 
-//스케쥴러 등록
-let job;
-let errorCount = 0;
-
 function scraping() {
   console.log(`
 ================================================================
-    [SCRAPING] start
+
+  [SCRAPING] start
+
 ================================================================
   `);
   scrapingDetailGooglePlay({
@@ -471,18 +462,18 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  // scraping();
+  scraping();
 
   // 스케쥴 등록
-  job = schedule.scheduleJob(getCronRule(), () => {
-    console.log('[SCHEDULE] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
-    scraping();
-    job.cancel();
-    // 5시간 이후 다시 스케쥴 등록
-    setTimeout(() => {
-      job.reschedule(getCronRule());
-    }, 1000 * 60 * 60 * 5);
-  });
+  // job = schedule.scheduleJob(getCronRule(), () => {
+  //   console.log('[SCHEDULE] run scraping', moment().format('YYYY-MM-DD HH:mm:ss'));
+  //   scraping();
+  //   job.cancel();
+  //   // 5시간 이후 다시 스케쥴 등록
+  //   setTimeout(() => {
+  //     job.reschedule(getCronRule());
+  //   }, 1000 * 60 * 60 * 5);
+  // });
 }
 
 module.exports = scheduler;
