@@ -141,10 +141,10 @@ h1 {
 
 h2 {
   font-size: 20px;
-  padding: 20px 10px 10px 10px;
-  border-bottom: 1px solid #333;
+/*  padding: 20px 10px 10px 10px;
+  border-bottom: 1px solid #333;*/
 }
-h2:before {
+/*h2:before {
   content: '';
   display: inline-block;
   vertical-align: middle;
@@ -152,7 +152,7 @@ h2:before {
   height: 8px;
   margin-right: 10px;
   background-color: #333;
-}
+}*/
 
 ul {
   margin-bottom: 30px;
