@@ -33,23 +33,35 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
     },
     $or: [
       {
-        'review.rate': score
+        'review.score': {
+          $in: score.split('').reduce((acc, data) => {
+            acc.push(parseInt(data, 10));
+            return acc;
+          }, [])
+        }
       },
       {
-        'review.score': score
+        'review.rate': {
+          $in: score.split('')
+        }
       }
     ]
   };
   if (os) {
     options.os = os;
   }
-  console.log(options);
+
+  console.log('=====================================');
+  console.log('typeof score', typeof score);
+  console.log('score', score);
+  console.log('options', options);
+  console.log('=====================================');
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
-  console.log(queryResult);
+  //console.log(queryResult);
   res.send(queryResult);
 });
 
