@@ -130,6 +130,7 @@ legend,
 
 #wrap {
   padding: 20px;
+  background-color: #eee;
 }
 
 h1 {
@@ -141,40 +142,54 @@ h1 {
 
 h2 {
   font-size: 20px;
-/*  padding: 20px 10px 10px 10px;
-  border-bottom: 1px solid #333;*/
+  font-weight: bold;
+  border-top: 3px solid #000;
+  padding: 15px 0 3px 5px;
 }
-/*h2:before {
-  content: '';
-  display: inline-block;
-  vertical-align: middle;
-  width: 8px;
-  height: 8px;
-  margin-right: 10px;
-  background-color: #333;
-}*/
+
+h2 > img    {
+    width: 50px;
+    margin: 0 0 5px 0;
+    vertical-align: middle;
+    display: inline-block;
+}
 
 ul {
   margin-bottom: 30px;
   font-size: 15px;
 }
 
-ul li {
+ul.reviews > li {
   margin-top: 10px;
 }
 
-ul li span {
+ul.reviews > li > span {
   font-weight: 600;
 }
 
 ul.reviews > li {
-  padding: 10px 15px;
-  background-color: #fff;
-  border-radius: 15px;
-  box-sizing: border-box;
+    padding: 30px 30px 20px 30px;
+    background-color: #fff;
+    box-sizing: border-box;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.19), 0 2px 3px rgba(0,0,0,0.23);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    cursor: pointer;
 }
+
+ul.reviews > li:hover {
+    box-shadow: 0 3px 15px rgba(0,0,0,0.19), 0 4px 6px rgba(0,0,0,0.23);
+}
+
 ul.reviews > li ul {
-  margin-bottom: 0;
+    margin-bottom: 0;
+}
+
+ul.reviews.android > li  {
+    border-left: 15px solid #6fbf5c;
+}
+
+ul.reviews.ios > li  {
+    border-left: 15px solid #222;
 }
 
 .reviewsWrap {
@@ -184,10 +199,7 @@ ul.reviews > li ul {
 
 .reviewsWrap > div {
   width: 50%;
-
   padding: 10px;
-
-  background-color: #eee;
   box-sizing: border-box;
   border-radius: 15px;
   flex: 1 1 auto;
@@ -201,70 +213,105 @@ ul.reviews > li ul {
   margin: 0 0 0 5px;
 }
 
-._star {
-  text-align: right;
-  font-size: 0;
-}
-
-._star > img {
-  width: 25px;
-}
-
-._user {
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-}
-
-._info {
-  position: absolute;
-  right: 0;
-  bottom: 5px;
-  font-size: 13px;
-}
-
 ._review {
   position: relative;
-  padding: 5px 0 30px 0;
+  padding: 5px 0 20px 0;
+  text-align: right;
 }
 
-._date > span {
-  font-size: 0;
+._review ._subject {
+    font-size: 16px;
+    font-weight: bold;
+    color: #111;
+    padding: 3px 0 15px 0;
+    text-align: left;
 }
 
-._user > span {
-  font-size: 0;
+._review ._content {
+    padding: 0 0 20px 0;
+    line-height: 1.5em;
+    text-align: left;
 }
 
-._info > span {
-  font-size: 0;
+._review ._info {
+    font-size: 13px;
+    padding: 15px 0;
+    background-color: #eef2f5;
+    display: inline-block;
+}
+._review ._info li {
+    border-right: 1px solid #d8dfe7;
+    padding: 0 25px;
+    display: inline-block;
 }
 
-._comment {
-  position: absolute;
-  bottom: 0px;
-  left: 0;
+._review ._info li:last-of-type   {
+    border-right: 0;
 }
 
-._comment > img {
-  width: 25px;
+._review ._info img {
+    vertical-align: middle;
 }
 
-._content {
-  padding: 15px 0 20px;
-  line-height: 1.5em;
+._review ._info ._user > img    {
+    width: 35px;
+    border-radius: 25px;
 }
 
-._subject {
-  border-bottom: 1px solid #ccc;
-  padding: 3px 0 7px;
+._review ._info ._rate > img    {
+    width: 30px;
 }
 
-li:after {
-  /* content: ""; */
-  border-bottom: 1px dashed #ccc;
-  width: 100%;
-  height: 1px;
+._review ._info ._user > span,
+._review ._info ._date > span {
+    font-size: 15px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+._review ._info ._rate > span   {
+    font-size: 17px;
+    font-family: sans-serif;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+._review ._info ._date > span   {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+._review ._info span    {
+    margin: 0 0 0 6px;
+}
+
+._comment   {
+    padding: 15px;
+    background-color: #eef2f5;
+}
+
+._comment ._icon    {
+    position: relative;
+    margin: 0 0 10px 0;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #fff;
+}
+
+._comment ._icon > img   {
+    width: 30px;
+}
+
+._comment ._icon > span   {
+    position: absolute;
+    top : 50%;
+    right: 0;
+    font-size: 14px;
+    transform:  translateY(-50%);
+}
+
+._comment ._content {
+    font-size: 14px;
+    line-height: 1.5em;
 }
 
 button._more {
