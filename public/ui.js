@@ -98,15 +98,36 @@ $(function() {
       var reviews = '';
       for (var i = 0; i < data.length; i++) {
         var review = '';
-        review += '<ul>';
-        review += '<li><span>운영체제</span> : ' + data[i].os + '</li>';
-        review += '<li><span>유저명</span> : ' + data[i].review.author + '</li>';
-        review += '<li><span>날짜</span> : ' + data[i].review.updated + '</li>';
-        review += '<li><span>점수</span> : ' + data[i].review.rate + '</li>';
-        review += '<li><span>제목</span> : ' + data[i].review.title + '</li>';
-        review += '<li><span>내용</span> : ' + data[i].review.comment + '</li>';
-        review += '</ul>';
-        reviews += '<li>' + review + '</li>';
+          review += '<div class="_review">';
+          // 제목
+          if(data[i].review.title != ""){
+              review += '<div class="_subject">' + data[i].review.title + '</div>';
+          }
+
+          // 내용
+          review += '<div class="_content">' + data[i].review.comment + '</div>';
+
+          // 사용자, 별점, 등록일
+          review += '<div class="_info">';
+          review += '<ul>';
+          review += '<li class="_user">';
+          review += '<img src="https://lh6.googleusercontent.com/--04fMNiWWy8/AAAAAAAAAAI/AAAAAAAAAAA/Pd3-fFkI_sw/w96-h96-p/photo.jpg" alt="">';
+
+          if(data[i].review.author != ""){
+              review += '<span>' + data[i].review.author + '</span>';
+          }
+          review += '</li>';
+          review += '<li class="_rate">';
+          review += '<img src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Star_Gold-512.png" alt="">';
+          review += '<span>' + data[i].review.rate + '</span>';
+          review += '</li>';
+          review += '<li class="_date">';
+          review += '<span>' + data[i].review.updated + '</span>';
+          review += '</li>';
+          review += '</div>';
+          review += '</div>';
+
+          reviews += '<li>' + review + '</li>';
       }
       $('.reviews.ios').append(reviews);
     },
