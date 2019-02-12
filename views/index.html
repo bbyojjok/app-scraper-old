@@ -14,11 +14,11 @@
 
       <div class="btnBox">
         <div>
-          <label><input type="radio" name="score" checked="checked" value="1" />평점1</label>
-          <label><input type="radio" name="score" value="2" />평점2</label>
-          <label><input type="radio" name="score" value="3" />평점3</label>
-          <label><input type="radio" name="score" value="4" />평점4</label>
-          <label><input type="radio" name="score" value="5" />평점5</label>
+          <label><input type="checkbox" name="score" checked="checked" value="1" />평점1</label>
+          <label><input type="checkbox" name="score" value="2" />평점2</label>
+          <label><input type="checkbox" name="score" value="3" />평점3</label>
+          <label><input type="checkbox" name="score" value="4" />평점4</label>
+          <label><input type="checkbox" name="score" value="5" />평점5</label>
         </div>
 
         <div>
@@ -29,20 +29,24 @@
           <label><input type="radio" name="date" value="180" />180일</label>
         </div>
 
-        <div>
+        <!--<div>
           <button id="requestBtn">확인</button>
-        </div>
+        </div>-->
       </div>
       <div class="reviewsWrap">
         <div>
           <h2><img src="https://cdn3.iconfinder.com/data/icons/picons-social/57/76-android-512.png" alt=""> ANDROID</h2>
-          <ul class="reviews android"></ul>
-          <button class="_more">더보기 (15/2,888)</button>
+          <div>
+            <ul class="reviews android"></ul>
+              <button class="_more">더보기 (15/2,888)</button>
+          </div>
         </div>
         <div>
           <h2><img src="https://cdn3.iconfinder.com/data/icons/picons-social/57/56-apple-512.png" alt=""> IOS</h2>
-          <ul class="reviews ios"></ul>
-          <button class="_more">더보기 (15/2,888)</button>
+            <div>
+              <ul class="reviews ios"></ul>
+              <button class="_more">더보기 (15/2,888)</button>
+            </div>
         </div>
       </div>
 
