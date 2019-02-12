@@ -129,9 +129,9 @@ legend,
 ******************************************************************************/
 
 #wrap * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 #wrap {
@@ -153,11 +153,11 @@ h2 {
   padding: 15px 0 3px 5px;
 }
 
-h2 > img    {
-    width: 50px;
-    margin: 0 0 5px 0;
-    vertical-align: middle;
-    display: inline-block;
+h2 > img {
+  width: 50px;
+  margin: 0 0 5px 0;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 ul {
@@ -174,27 +174,27 @@ ul.reviews > li > span {
 }
 
 ul.reviews > li {
-    padding: 30px 30px 20px 30px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.19), 0 2px 3px rgba(0,0,0,0.23);
-    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-    cursor: pointer;
+  padding: 30px 30px 20px 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
 }
 
 ul.reviews > li:hover {
-    box-shadow: 0 3px 15px rgba(0,0,0,0.19), 0 4px 6px rgba(0,0,0,0.23);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.19), 0 4px 6px rgba(0, 0, 0, 0.23);
 }
 
 ul.reviews > li ul {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
-ul.reviews.android > li  {
-    border-left: 15px solid #6fbf5c;
+ul.reviews.android > li {
+  border-left: 15px solid #6fbf5c;
 }
 
-ul.reviews.ios > li  {
-    border-left: 15px solid #222;
+ul.reviews.ios > li {
+  border-left: 15px solid #222;
 }
 
 .reviewsWrap {
@@ -224,98 +224,98 @@ ul.reviews.ios > li  {
 }
 
 ._review ._subject {
-    font-size: 16px;
-    font-weight: bold;
-    color: #111;
-    padding: 3px 0 15px 0;
-    text-align: left;
+  font-size: 16px;
+  font-weight: bold;
+  color: #111;
+  padding: 3px 0 15px 0;
+  text-align: left;
 }
 
 ._review ._content {
-    padding: 0 0 20px 0;
-    line-height: 1.5em;
-    text-align: left;
+  padding: 0 0 20px 0;
+  line-height: 1.5em;
+  text-align: left;
 }
 
 ._review ._info {
-    font-size: 13px;
-    padding: 15px 0;
-    background-color: #eef2f5;
-    display: inline-block;
+  font-size: 13px;
+  padding: 15px 0;
+  background-color: #eef2f5;
+  display: inline-block;
 }
 ._review ._info li {
-    border-right: 1px solid #d8dfe7;
-    padding: 0 25px;
-    display: inline-block;
+  border-right: 1px solid #d8dfe7;
+  padding: 0 25px;
+  display: inline-block;
 }
 
-._review ._info li:last-of-type   {
-    border-right: 0;
+._review ._info li:last-of-type {
+  border-right: 0;
 }
 
 ._review ._info img {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
-._review ._info ._user > img    {
-    width: 35px;
-    border-radius: 25px;
+._review ._info ._user > img {
+  width: 35px;
+  border-radius: 25px;
 }
 
-._review ._info ._rate > img    {
-    width: 30px;
+._review ._info ._rate > img {
+  width: 30px;
 }
 
 ._review ._info ._user > span,
 ._review ._info ._date > span {
-    font-size: 15px;
-    font-weight: bold;
-    vertical-align: middle;
+  font-size: 15px;
+  font-weight: bold;
+  vertical-align: middle;
 }
 
-._review ._info ._rate > span   {
-    font-size: 17px;
-    font-family: sans-serif;
-    font-weight: bold;
-    vertical-align: middle;
+._review ._info ._rate > span {
+  font-size: 17px;
+  font-family: sans-serif;
+  font-weight: bold;
+  vertical-align: middle;
 }
 
-._review ._info ._date > span   {
-    font-size: 14px;
-    font-weight: normal;
+._review ._info ._date > span {
+  font-size: 14px;
+  font-weight: normal;
 }
 
-._review ._info span    {
-    margin: 0 0 0 6px;
+._review ._info span {
+  margin: 0 0 0 6px;
 }
 
-._comment   {
-    padding: 15px;
-    background-color: #eef2f5;
+._comment {
+  padding: 15px;
+  background-color: #eef2f5;
 }
 
-._comment ._icon    {
-    position: relative;
-    margin: 0 0 10px 0;
-    padding: 0 0 10px 0;
-    border-bottom: 1px solid #fff;
+._comment ._icon {
+  position: relative;
+  margin: 0 0 10px 0;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid #fff;
 }
 
-._comment ._icon > img   {
-    width: 30px;
+._comment ._icon > img {
+  width: 30px;
 }
 
-._comment ._icon > span   {
-    position: absolute;
-    top : 50%;
-    right: 0;
-    font-size: 14px;
-    transform:  translateY(-50%);
+._comment ._icon > span {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  font-size: 14px;
+  transform: translateY(-50%);
 }
 
 ._comment ._content {
-    font-size: 14px;
-    line-height: 1.5em;
+  font-size: 14px;
+  line-height: 1.5em;
 }
 
 button._more {
