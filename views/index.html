@@ -13,20 +13,38 @@
       <h1>app-scraper</h1>
 
       <div class="btnBox">
-        <div>
-          <label><input type="checkbox" name="score" checked="checked" value="1" />평점1</label>
-          <label><input type="checkbox" name="score" value="2" />평점2</label>
-          <label><input type="checkbox" name="score" value="3" />평점3</label>
-          <label><input type="checkbox" name="score" value="4" />평점4</label>
-          <label><input type="checkbox" name="score" value="5" />평점5</label>
+        <div class="score">
+          <label for="score1" class="checked"
+            ><input
+              id="score1"
+              type="checkbox"
+              name="score"
+              checked="checked"
+              value="1"
+            />평점1</label
+          >
+          <label for="score2"
+            ><input id="score2" type="checkbox" name="score" value="2" />평점2</label
+          >
+          <label for="score3"
+            ><input id="score3" type="checkbox" name="score" value="3" />평점3</label
+          >
+          <label for="score4"
+            ><input id="score4" type="checkbox" name="score" value="4" />평점4</label
+          >
+          <label for="score5"
+            ><input id="score5" type="checkbox" name="score" value="5" />평점5</label
+          >
         </div>
 
-        <div>
-          <label><input type="radio" name="date" checked="checked" value="7" />7일</label>
-          <label><input type="radio" name="date" value="15" />15일</label>
-          <label><input type="radio" name="date" value="30" />30일</label>
-          <label><input type="radio" name="date" value="90" />90일</label>
-          <label><input type="radio" name="date" value="180" />180일</label>
+        <div class="date">
+          <label for="date1" class="checked"
+            ><input id="date1" type="radio" name="date" checked="checked" value="7" />7일</label
+          >
+          <label for="date2"><input id="date2" type="radio" name="date" value="15" />15일</label>
+          <label for="date3"><input id="date3" type="radio" name="date" value="30" />30일</label>
+          <label for="date4"><input id="date4" type="radio" name="date" value="90" />90일</label>
+          <label for="date5"><input id="date5" type="radio" name="date" value="180" />180일</label>
         </div>
 
         <!--<div>
@@ -41,10 +59,13 @@
               alt=""
             />
             ANDROID
+            <span class="version">version: <span class="current"></span></span>
           </h2>
           <div>
             <ul class="reviews android"></ul>
-            <button class="_more">더보기 (15/2,888)</button>
+            <button class="_more">
+              더보기 (<span class="active">15</span>/<span class="total">2,888</span>)
+            </button>
           </div>
         </div>
         <div>
@@ -54,10 +75,13 @@
               alt=""
             />
             IOS
+            <span class="version">version: <span class="current"></span></span>
           </h2>
           <div>
             <ul class="reviews ios"></ul>
-            <button class="_more">더보기 (15/2,888)</button>
+            <button class="_more">
+              더보기 (<span class="active">15</span>/<span class="total">2,888</span>)
+            </button>
           </div>
         </div>
       </div>

@@ -25,7 +25,6 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
   const prevday = moment(today)
     .subtract(date, 'days')
     .format();
-
   const options = {
     date: {
       $gte: prevday,
@@ -51,18 +50,29 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
     options.os = os;
   }
 
-  console.log('=====================================');
-  console.log('typeof score', typeof score);
-  console.log('score', score);
   console.log('options', options);
-  console.log('=====================================');
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
-  //console.log(queryResult);
-  res.send(queryResult);
+  const result = await queryResult.reduce((acc, data) => {
+    let dateFormatChange = data;
+    if (dateFormatChange.review.updated !== undefined) {
+      dateFormatChange.review.updated = moment(dateFormatChange.date)
+        .tz('Asia/Seoul')
+        .format('YYYY. MM. DD');
+    }
+    if (dateFormatChange.review.date !== undefined) {
+      dateFormatChange.review.date = moment(dateFormatChange.date)
+        .tz('Asia/Seoul')
+        .format('YYYY. MM. DD');
+    }
+    acc.push(dateFormatChange);
+    return acc;
+  }, []);
+
+  res.send(result);
 });
 
 route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
@@ -75,7 +85,6 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   const end = moment()
     .endOf('day')
     .format();
-
   const from =
     req.params.from !== undefined
       ? moment(req.params.from, 'YYYYMMDD')
@@ -101,12 +110,10 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
     options.os = os;
   }
 
-  console.log('=====================================');
   console.log('today:', today);
   console.log('end:', end);
   console.log('prevday:', prevday);
   console.log('options', options);
-  console.log('=====================================');
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
