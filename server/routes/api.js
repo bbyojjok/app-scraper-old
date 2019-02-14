@@ -3,7 +3,10 @@ const { Detail, Review } = require('../models/index');
 const moment = require('moment');
 moment.locale('ko');
 
-// 상세내용 조회
+/**
+ * 상세내용 조회
+ * /details/운영체제
+ */
 route.get('/details/:os?', async (req, res) => {
   const os = req.params.os;
   const queryResult = await Detail.findOne({}, err => {
@@ -16,7 +19,10 @@ route.get('/details/:os?', async (req, res) => {
   }
 });
 
-// 리뷰 조회 (오늘부터 몇일전 기준으로 조회) /review/요일/평점/운영체제
+/**
+ * 리뷰 조회 (오늘부터 몇일전 기준으로 조회)
+ * /review/요일/평점/운영체제
+ */
 route.get('/review/:date?/:score?/:os?', async (req, res) => {
   const date = req.params.date;
   const score = req.params.score;
@@ -75,7 +81,10 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
   res.send(result);
 });
 
-// 리뷰 조회 (몇일부터 몇일까지 조회) /reviews/from/to/운영체제
+/**
+ * 리뷰 조회 (몇일부터 몇일까지 조회)
+ * /reviews/from/to/운영체제
+ */
 route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   const today = moment()
     .startOf('day')
@@ -123,7 +132,9 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   res.send(queryResult);
 });
 
-// 리뷰 조회 (그날 스크랩된 리뷰 조회용)
-// 필요한지 확인
+/**
+ * 리뷰 조회 (그날 스크랩된 리뷰 조회용)
+ * TODO 필요한지 확인
+ */
 
 module.exports = route;
