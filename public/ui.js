@@ -49,59 +49,59 @@ function reviewRequest() {
       console.log('android row 갯수:', data.length);
 
       var reviews = '';
-      for (var i = 0; i < data.length; i++) {
-        var review = '';
-        review += '<div class="_review">';
-        // 제목
-        if (data[i].review.title != '') {
-          review += '<div class="_subject">' + data[i].review.title + '</div>';
-        }
+      if (data.length !== 0) {
+        for (var i = 0; i < data.length; i++) {
+          var review = '';
+          review += '<div class="_review">';
+          // 제목
+          if (data[i].review.title != '') {
+            review += '<div class="_subject">' + data[i].review.title + '</div>';
+          }
 
-        // 내용
-        review += '<div class="_content">' + data[i].review.text + '</div>';
+          // 내용
+          review += '<div class="_content">' + data[i].review.text + '</div>';
 
-        // 사용자, 별점, 등록일
-        review += '<div class="_info">';
-        review += '<ul>';
-        review += '<li class="_user">';
-        review += '<img src="' + data[i].review.userImage + '" alt="">';
+          // 사용자, 별점, 등록일
+          review += '<div class="_info">';
+          review += '<ul>';
+          review += '<li class="_user">';
+          review += '<img src="' + data[i].review.userImage + '" alt="">';
 
-        if (data[i].review.userName != '') {
-          review += '<span>' + data[i].review.userName + '</span>';
-        }
-        review += '</li>';
-        review += '<li class="_rate">';
-        review +=
-          '<img src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Star_Gold-512.png" alt="">';
-        review += '<span>' + data[i].review.score + '</span>';
-        review += '</li>';
-        review += '<li class="_date">';
-        review += '<span>' + data[i].review.date + '</span>';
-        review += '</li>';
-        review += '</div>';
-        review += '</div>';
-
-        // 홈쇼핑 답변
-        if (data[i].review.replyDate != null) {
-          review += '<div class="_comment">';
-          review += '<div class="_icon">';
+          if (data[i].review.userName != '') {
+            review += '<span>' + data[i].review.userName + '</span>';
+          }
+          review += '</li>';
+          review += '<li class="_rate">';
           review +=
-            '<img src="https://cdn2.iconfinder.com/data/icons/thesquid-ink-40-free-flat-icon-pack/64/support-512.png" alt="">';
-          review += '<span>' + data[i].review.replyDate + '</span>';
+            '<img src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Star_Gold-512.png" alt="">';
+          review += '<span>' + data[i].review.score + '</span>';
+          review += '</li>';
+          review += '<li class="_date">';
+          review += '<span>' + data[i].review.date + '</span>';
+          review += '</li>';
           review += '</div>';
-          review += '<div class="_content">' + data[i].review.replyText + '</div>';
           review += '</div>';
-        }
 
-        reviews += '<li>' + review + '</li>';
+          // 홈쇼핑 답변
+          if (data[i].review.replyDate != null) {
+            review += '<div class="_comment">';
+            review += '<div class="_icon">';
+            review +=
+              '<img src="https://cdn2.iconfinder.com/data/icons/thesquid-ink-40-free-flat-icon-pack/64/support-512.png" alt="">';
+            review += '<span>' + data[i].review.replyDate + '</span>';
+            review += '</div>';
+            review += '<div class="_content">' + data[i].review.replyText + '</div>';
+            review += '</div>';
+          }
+
+          reviews += '<li>' + review + '</li>';
+        }
+      } else {
+        reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
       $('.reviews.android')
         .empty()
         .append(reviews);
-      $('.reviewsWrap > div')
-        .eq(0)
-        .find('.active')
-        .text(data.length);
       $('.reviewsWrap > div')
         .eq(0)
         .find('.total')
@@ -122,48 +122,48 @@ function reviewRequest() {
       console.log('ios row 갯수:', data.length);
 
       var reviews = '';
-      for (var i = 0; i < data.length; i++) {
-        var review = '';
-        review += '<div class="_review">';
-        // 제목
-        if (data[i].review.title != '') {
-          review += '<div class="_subject">' + data[i].review.title + '</div>';
+      if (data.length !== 0) {
+        for (var i = 0; i < data.length; i++) {
+          var review = '';
+          review += '<div class="_review">';
+          // 제목
+          if (data[i].review.title != '') {
+            review += '<div class="_subject">' + data[i].review.title + '</div>';
+          }
+
+          // 내용
+          review += '<div class="_content">' + data[i].review.comment + '</div>';
+
+          // 사용자, 별점, 등록일
+          review += '<div class="_info">';
+          review += '<ul>';
+          review += '<li class="_user">';
+          review +=
+            '<img src="https://lh6.googleusercontent.com/--04fMNiWWy8/AAAAAAAAAAI/AAAAAAAAAAA/Pd3-fFkI_sw/w96-h96-p/photo.jpg" alt="">';
+
+          if (data[i].review.author != '') {
+            review += '<span>' + data[i].review.author + '</span>';
+          }
+          review += '</li>';
+          review += '<li class="_rate">';
+          review +=
+            '<img src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Star_Gold-512.png" alt="">';
+          review += '<span>' + data[i].review.rate + '</span>';
+          review += '</li>';
+          review += '<li class="_date">';
+          review += '<span>' + data[i].review.updated + '</span>';
+          review += '</li>';
+          review += '</div>';
+          review += '</div>';
+
+          reviews += '<li>' + review + '</li>';
         }
-
-        // 내용
-        review += '<div class="_content">' + data[i].review.comment + '</div>';
-
-        // 사용자, 별점, 등록일
-        review += '<div class="_info">';
-        review += '<ul>';
-        review += '<li class="_user">';
-        review +=
-          '<img src="https://lh6.googleusercontent.com/--04fMNiWWy8/AAAAAAAAAAI/AAAAAAAAAAA/Pd3-fFkI_sw/w96-h96-p/photo.jpg" alt="">';
-
-        if (data[i].review.author != '') {
-          review += '<span>' + data[i].review.author + '</span>';
-        }
-        review += '</li>';
-        review += '<li class="_rate">';
-        review +=
-          '<img src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Star_Gold-512.png" alt="">';
-        review += '<span>' + data[i].review.rate + '</span>';
-        review += '</li>';
-        review += '<li class="_date">';
-        review += '<span>' + data[i].review.updated + '</span>';
-        review += '</li>';
-        review += '</div>';
-        review += '</div>';
-
-        reviews += '<li>' + review + '</li>';
+      } else {
+        reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
       $('.reviews.ios')
         .empty()
         .append(reviews);
-      $('.reviewsWrap > div')
-        .eq(1)
-        .find('.active')
-        .text(data.length);
       $('.reviewsWrap > div')
         .eq(1)
         .find('.total')

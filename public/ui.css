@@ -230,7 +230,7 @@ ul.reviews > li {
   background-color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  cursor: pointer;
+  cursor: default;
 }
 
 ul.reviews > li:hover {
@@ -239,6 +239,11 @@ ul.reviews > li:hover {
 
 ul.reviews > li ul {
   margin-bottom: 0;
+}
+
+ul.reviews > li.not-exists {
+  text-align: center;
+  padding-bottom: 30px;
 }
 
 ul.reviews.android > li {
@@ -256,9 +261,13 @@ ul.reviews.ios > li {
   display: flex;
 }
 
-.reviewsWrap h2 .version {
+.reviewsWrap h2 .etc-box {
   margin-left: 10px;
   font-weight: 400;
+}
+
+.reviewsWrap h2 .etc-box > span {
+  margin-left: 10px;
 }
 
 .reviewsWrap > div {

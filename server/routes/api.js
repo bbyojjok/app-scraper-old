@@ -50,8 +50,6 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
     options.os = os;
   }
 
-  console.log('options', options);
-
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
@@ -119,7 +117,6 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
-  //console.log(queryResult);
   res.send(queryResult);
 });
 
