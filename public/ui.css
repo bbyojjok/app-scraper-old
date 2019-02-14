@@ -8,8 +8,8 @@ body {
   -webkit-text-size-adjust: none;
 }
 body {
-  font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font: 12px 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   color: #333;
   line-height: 1;
 }
@@ -144,6 +144,12 @@ body {
   height: 100%;
   padding: 20px;
   background-color: #eee;
+}
+
+#wrap h1 {
+  text-align: center;
+  font-weight: 600;
+  font-size: 40px;
 }
 
 .btnBox {
