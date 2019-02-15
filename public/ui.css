@@ -204,12 +204,11 @@ body {
 .btnBox > div label.checked:before {
   content: '';
   display: block;
-  width: 2px;
+  width: 3px;
   height: 100%;
   position: absolute;
   left: 0;
   top: 0;
-  opacity: 0.3;
 }
 
 .btnBox > div:nth-child(1) label.checked:before {
@@ -317,7 +316,6 @@ ul.reviews.ios > li {
 .reviewsWrap > div {
   width: 50%;
   height: 100%;
-  border-radius: 15px;
   flex: 1 1 auto;
 }
 
