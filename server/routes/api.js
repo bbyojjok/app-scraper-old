@@ -134,7 +134,8 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
 
 /**
  * 리뷰 조회 (그날 스크랩된 리뷰 조회용)
- * TODO 필요한지 확인
+ * TODO 2차 신규 또는 업데이트 된 스크랩 내용을 텔레그램으로 쏴주기
+ * 구현방법은 추후 논의
  */
 
 module.exports = route;
