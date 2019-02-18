@@ -487,7 +487,7 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  // scraping();
+  //scraping();
 
   // 스케쥴 등록
   scrapJob = schedule.scheduleJob(getCronRule(), () => {

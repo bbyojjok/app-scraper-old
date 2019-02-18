@@ -1,4 +1,4 @@
-function selectReview() {
+function appScraperUi() {
   var $scoreLabel = $('.score label');
   var $scoreCheckbox = $('.score input[type=checkbox]');
   var $dateRadio = $('.date input[type=radio]');
@@ -34,6 +34,12 @@ function selectReview() {
         .removeClass('checked');
     }
     hashSet();
+  });
+
+  // 엑셀 클릭
+  $('.btnBox .xlsxBtn').bind('click', function() {
+    xlsxRequest();
+    return false;
   });
 
   // hashchange
@@ -93,6 +99,23 @@ function hashSet() {
   }
   var date = '/' + date_value + '/' + score_value;
   location.hash = date;
+}
+
+function xlsxRequest() {
+  var date = $('.date input[type=radio]:checked').val();
+  $.ajax({
+    method: 'GET',
+    url: '/api/xlsx/' + date,
+    contentType: 'application/json',
+    dataType: 'json',
+    success: function(data, textStatus, jqXHR) {
+      window.location.assign('/' + data.file);
+      alert('선택 되어있는 날짜 기준으로\nexcel 파일로 저장되었습니다.');
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      alert(jqXHR.responseText);
+    }
+  });
 }
 
 function reviewRequest() {
@@ -260,5 +283,5 @@ function reviewRequest() {
 }
 
 $(function() {
-  selectReview();
+  appScraperUi();
 });

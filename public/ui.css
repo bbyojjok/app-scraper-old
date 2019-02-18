@@ -171,6 +171,7 @@ body {
   flex: 1 1 auto;
   display: flex;
   flex-flow: wrap;
+  justify-content: space-around;
 }
 
 .btnBox > div label {
@@ -181,6 +182,7 @@ body {
   margin: 5px;
   flex: 1 1 auto;
   font-size: 15px;
+  line-height: 24px;
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   border-radius: 5px;
   overflow: hidden;
@@ -223,6 +225,21 @@ body {
   width: 0;
   height: 0;
   visibility: hidden;
+}
+
+.btnBox .other {
+  padding: 10px;
+}
+
+.btnBox .other button.xlsxBtn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: url('/images/icon-excel.png') no-repeat 0 0;
+  background-size: 34px auto;
+  font-size: 0;
+  line-height: 0;
+  cursor: pointer;
 }
 
 h2 {
