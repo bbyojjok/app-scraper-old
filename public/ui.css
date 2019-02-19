@@ -127,13 +127,6 @@ legend,
 /******************************************************************************
 ***  ui
 ******************************************************************************/
-
-html,
-body {
-  height: 100%;
-  overflow: hidden;
-}
-
 #wrap * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -299,10 +292,14 @@ ul.reviews.ios > li {
 }
 
 .reviewsWrap {
-  height: 100%;
-  font-size: 0;
-  padding: 0 20px 225px 20px;
-  display: flex;
+  height: auto;
+  padding: 0 20px 20px 20px;
+}
+
+.reviewsWrap:after {
+  content: '';
+  display: block;
+  clear: both;
 }
 
 .reviewsWrap h2 {
@@ -332,23 +329,21 @@ ul.reviews.ios > li {
 
 .reviewsWrap > div {
   width: 50%;
-  height: 100%;
-  flex: 1 1 auto;
+  float: left;
 }
 
-.reviewsWrap > div > div {
+.reviewsWrap .reviewsBox {
   padding: 10px 20px 10px;
-  height: 100%;
   overflow: auto;
   border: 1px solid #eee;
 }
 
 .reviewsWrap > div:first-of-type {
-  margin: 0 5px 0 0;
+  padding-right: 5px;
 }
 
 .reviewsWrap > div:last-of-type {
-  margin: 0 0 0 5px;
+  padding-left: 5px;
 }
 
 ._review {
@@ -456,4 +451,46 @@ button._more {
   padding: 10px 0 13px 0;
   cursor: pointer;
   font-size: 16px;
+}
+
+button.btnTop {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #000;
+  border: 0;
+  color: #fff;
+  font-size: 12px;
+  display: none;
+}
+
+/* mobile 640 이하 일때 */
+@media screen and (max-width: 640px) {
+  .reviewsWrap > div {
+    float: none;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .reviewsWrap > div:first-child {
+    margin-top: 0;
+  }
+
+  .reviewsWrap > div:first-of-type {
+    padding-right: 0;
+  }
+
+  .reviewsWrap > div:last-of-type {
+    padding-left: 0;
+  }
+
+  .reviewsBox {
+    height: auto !important;
+  }
+
+  button.btnTop {
+    display: inline-block;
+  }
 }

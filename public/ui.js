@@ -55,6 +55,24 @@ function appScraperUi() {
     buttonSet();
     reviewRequest();
   }
+
+  // ui
+  $('.btnTop').bind('click', function() {
+    $window.scrollTop(0);
+    return false;
+  });
+  $window.bind('resize.ui', resizeSet);
+  resizeSet();
+}
+
+function resizeSet() {
+  var h =
+    $(window).height() -
+    ($('#header').outerHeight() +
+      $('.btnBox').outerHeight() +
+      $('.reviewsTitle').outerHeight() +
+      50);
+  $('.reviewsBox').height(h);
 }
 
 function buttonSet() {

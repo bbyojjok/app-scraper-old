@@ -48,7 +48,7 @@
       </div>
       <div class="reviewsWrap">
         <div>
-          <h2>
+          <h2 class="reviewsTitle">
             <img src="/images/logo-android.png" alt="android" />
             <span>ANDROID</span>
             <span class="etc-box">
@@ -56,12 +56,14 @@
               <span>total : <span class="total"></span></span>
             </span>
           </h2>
-          <div>
-            <ul class="reviews android"></ul>
+          <div class="reviewsBox">
+            <ul class="reviews android">
+              <li>로딩중...</li>
+            </ul>
           </div>
         </div>
         <div>
-          <h2>
+          <h2 class="reviewsTitle">
             <img src="/images/logo-apple.png" alt="apple" />
             <span>IOS</span>
             <span class="etc-box">
@@ -69,11 +71,15 @@
               <span>total : <span class="total"></span></span>
             </span>
           </h2>
-          <div>
-            <ul class="reviews ios"></ul>
+          <div class="reviewsBox">
+            <ul class="reviews ios">
+              <li>로딩중...</li>
+            </ul>
           </div>
         </div>
       </div>
+
+      <button class="btnTop">TOP</button>
     </div>
 
     <script src="/jquery-2.2.0.min.js"></script>
