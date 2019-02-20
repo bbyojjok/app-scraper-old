@@ -281,7 +281,8 @@ ul.reviews > li ul {
 
 ul.reviews > li.not-exists {
   text-align: center;
-  padding-bottom: 30px;
+  padding-top: 50px;
+  padding-bottom: 50px;
 }
 
 ul.reviews.android > li {
