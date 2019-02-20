@@ -222,6 +222,7 @@ legend,
 
 .btnBox .other {
   padding: 10px;
+  max-width: 54px;
 }
 
 .btnBox .other button.xlsxBtn {
