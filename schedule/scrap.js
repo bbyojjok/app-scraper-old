@@ -241,7 +241,7 @@ function scrapingReviewGooglePlay(scrapData) {
               if (err) throw err;
             }
           );
-          await scrapData.review.googlePlay.update.push(updateResult);
+          scrapData.review.googlePlay.update.push(updateResult);
           await console.log('[DB] reviews googlePlay, 중복된 리뷰 업데이트', idx);
         }
       } else {
@@ -418,11 +418,11 @@ function scraping() {
     },
     review: {
       googlePlay: {
-        update: null,
+        update: [],
         error: null
       },
       appStore: {
-        update: null,
+        update: [],
         error: null
       }
     }
