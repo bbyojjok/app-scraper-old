@@ -213,7 +213,7 @@ function scrapingReviewGooglePlay(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 0 ~ 112
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 112; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject));
     }
 
@@ -241,7 +241,7 @@ function scrapingReviewGooglePlay(scrapData) {
               if (err) throw err;
             }
           );
-          scrapData.review.googlePlay.update.push(updateResult);
+          await scrapData.review.googlePlay.update.push(updateResult);
           await console.log('[DB] reviews googlePlay, 중복된 리뷰 업데이트', idx);
         }
       } else {
@@ -306,7 +306,7 @@ function scrapingReviewAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 1 ~ 10
-    for (let i = 1; i <= 1; i++) {
+    for (let i = 1; i <= 10; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewAppStore(i, reject, scrapData));
     }
 
@@ -487,7 +487,7 @@ function scraping() {
 
 function scheduler() {
   // 테스트
-  //scraping();
+  scraping();
 
   // 스케쥴 등록
   scrapJob = schedule.scheduleJob(getCronRule(), () => {
