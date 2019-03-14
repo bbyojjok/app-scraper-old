@@ -1,0 +1,10 @@
+doctype html
+html(lang='kr')
+  include includes/head.pug
+  body
+    div(id='wrap')
+      include includes/header.pug
+      block contents
+      include includes/btnTop.pug
+    include includes/script.pug
+    block script

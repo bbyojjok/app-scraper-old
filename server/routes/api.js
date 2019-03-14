@@ -1,4 +1,5 @@
 const route = require('express').Router();
+const sites = require('../../schedule/sites');
 const { Detail, Review } = require('../models/index');
 const axios = require('axios');
 const xl = require('excel4node');
@@ -8,13 +9,17 @@ moment.locale('ko');
 
 /**
  * 상세내용 조회
- * /details/운영체제
+ * /details/사이트/운영체제
+ * example: /details/hmall/android
  */
-route.get('/details/:os?', async (req, res) => {
+route.get('/details/:site/:os?', async (req, res) => {
+  const site = req.params.site;
   const os = req.params.os;
-  const queryResult = await Detail.findOne({}, err => {
-    if (err) return res.status(401).send(`DB Error: ${err}`);
-  }).sort({ created: -1 });
+  const queryResult = await Detail[site]
+    .findOne({}, err => {
+      if (err) return res.status(401).send(`DB Error: ${err}`);
+    })
+    .sort({ created: -1 });
   if (os) {
     res.send(queryResult[os]);
   } else {
@@ -24,22 +29,29 @@ route.get('/details/:os?', async (req, res) => {
 
 /**
  * 리뷰 조회 (오늘부터 몇일전 기준으로 조회)
- * /review/요일/평점/운영체제
+ * /review/사이트/요일/평점/운영체제
+ * example: /review/hmall/7/1/android
  */
-route.get('/review/:date?/:score?/:os?', async (req, res) => {
+route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
+  const site = req.params.site;
   const date = req.params.date;
   const score = req.params.score;
   const os = req.params.os;
+  // 오늘까지
   const today = moment()
     .startOf('day')
     .format();
-  const prevday = moment(today)
+  // 오늘 자정까지
+  const end = moment()
+    .endOf('day')
+    .format();
+  const prevday = moment(end)
     .subtract(date, 'days')
     .format();
   const options = {
     date: {
       $gte: prevday,
-      $lte: today
+      $lte: end
     },
     $or: [
       {
@@ -61,9 +73,11 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
     options.os = os;
   }
 
-  const queryResult = await Review.find(options, err => {
-    if (err) return res.status(401).send(`DB Error: ${err}`);
-  }).sort({ date: -1 });
+  const queryResult = await Review[site]
+    .find(options, err => {
+      if (err) return res.status(401).send(`DB Error: ${err}`);
+    })
+    .sort({ date: -1 });
 
   const result = await queryResult.reduce((acc, data) => {
     let dateFormatChange = data;
@@ -85,17 +99,20 @@ route.get('/review/:date?/:score?/:os?', async (req, res) => {
 });
 
 /**
- * 엑셀 다운
+ * 엑셀 다운 (요일별로 평점1~5점)
+ * /xlsx/사이트/요일
+ * example: /xlsx/hmall/7
  */
-route.get('/xlsx/:date?', async (req, res) => {
+route.get('/xlsx/:site/:date?', async (req, res) => {
+  const site = req.params.site;
   const date = req.params.date;
-  const url = `http://127.0.0.1:889/api/review/${date}/12345/`;
+  const url = `http://127.0.0.1:889/api/review/${site}/${date}/12345/`;
   const today = moment()
     .startOf('day')
     .format('YYYYMMDD');
   const now = new Date().valueOf();
   const folder = makeDir.sync(`public/downloads/${today}/`);
-  const file = `downloads/${today}/reviews_${date}_${now}.xlsx`;
+  const file = `downloads/${today}/reviews_${site}_${date}_${now}.xlsx`;
 
   // 엑셀
   const wb = new xl.Workbook();
@@ -262,17 +279,19 @@ route.get('/xlsx/:date?', async (req, res) => {
 
 /**
  * 리뷰 조회 (몇일부터 몇일까지 조회)
- * /reviews/from/to/운영체제
+ * /reviews/사이트/from/to/운영체제
+ * example: /reviews/hmall/20190301/20190313/android
  */
-route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
+route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
+  const site = req.params.site;
   const today = moment()
     .startOf('day')
     .format();
-  const prevday = moment(today)
-    .subtract(1, 'days')
-    .format();
   const end = moment()
     .endOf('day')
+    .format();
+  const prevday = moment(end)
+    .subtract(1, 'days')
     .format();
   const from =
     req.params.from !== undefined
@@ -286,8 +305,8 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
         ? moment(req.params.to, 'YYYYMMDD')
             .tz('Asia/Seoul')
             .format()
-        : today
-      : today;
+        : end
+      : end;
   const os = req.params.os;
   const options = {
     date: {
@@ -304,9 +323,11 @@ route.get('/reviews/:from?/:to?/:os?', async (req, res) => {
   console.log('prevday:', prevday);
   console.log('options', options);
 
-  const queryResult = await Review.find(options, err => {
-    if (err) return res.status(401).send(`DB Error: ${err}`);
-  }).sort({ date: -1 });
+  const queryResult = await Review[site]
+    .find(options, err => {
+      if (err) return res.status(401).send(`DB Error: ${err}`);
+    })
+    .sort({ date: -1 });
 
   res.send(queryResult);
 });

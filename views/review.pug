@@ -1,0 +1,76 @@
+extends layout.pug
+
+block contents
+  div(id='siteWrap')
+    img(src='/images/logo-'+site+'.png' alt=site)
+  div(class='btnBox')
+    div(class='score')
+      label(for='score1' class='checked' title='별점1')
+        input(id='score1' type='checkbox' name='score' checked='checked' value='1')
+        | 별점1
+      label(for='score2' title='별점2')
+        input(id='score2' type='checkbox' name='score' value='2')
+        | 별점2
+      label(for='score3' title='별점3')
+        input(id='score3' type='checkbox' name='score' value='3')
+        | 별점3
+      label(for='score4' title='별점4')
+        input(id='score4' type='checkbox' name='score' value='4')
+        | 별점4
+      label(for='score5' title='별점5')
+        input(id='score5' type='checkbox' name='score' value='5')
+        | 별점5
+    div(class='date')
+      label(for='date1' class='checked' title='7 일')
+        input(id='date1' type='radio' name='date' checked='checked' value='7')
+        | 7 일
+      label(for='date2' title='15 일')
+        input(id='date2' type='radio' name='date' value='15')
+        | 15 일
+      label(for='date3' title='30 일')
+        input(id='date3' type='radio' name='date' value='30')
+        | 30 일
+      label(for='date4' title='90 일')
+        input(id='date4' type='radio' name='date' value='90')
+        | 90 일
+      label(for='date5' title='180 일')
+        input(id='date5' type='radio' name='date' value='180')
+        | 180 일
+    div(class='other')
+      button(class='xlsxBtn' title='엑셀 다운') 엑셀 다운
+  div(class='reviewsWrap')
+    div
+      h2(class='reviewsTitle')
+        img(src='/images/logo-android.png' alt='android')
+        span(class='os') ANDROID
+        span(class='etc-box')
+          //span(class='score')
+          //  span(class='star')
+          span 버젼 : 
+            span(class='version')
+          span 검색된 리뷰 수 : 
+            span(class='total')
+      div(class='reviewsBox')
+        ul(class='reviews android')
+          li 로딩중...
+    div
+      h2(class='reviewsTitle')
+        img(src='/images/logo-apple.png' alt='ios')
+        span IOS
+        span(class='etc-box')
+          //span(class='score')
+          //  span(class='star')
+          span 버젼 : 
+            span(class='version')
+          span 검색된 리뷰 수 : 
+            span(class='total')
+      div(class='reviewsBox')
+        ul(class='reviews ios')
+          li 로딩중...
+  
+block script
+  script.
+      $(function() {
+        var site = '#{site}';
+        appScraperUi(site);
+      });

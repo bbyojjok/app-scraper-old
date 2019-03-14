@@ -1,0 +1,9 @@
+extends layout.pug
+
+block contents
+  div(id='sitesWrap')
+    ul
+      each item in list
+        li
+          a(href='/'+item title=item+' 리뷰 보러가기')
+            img(src='/images/logo-'+item+'.png' alt=item)

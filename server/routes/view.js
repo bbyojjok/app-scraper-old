@@ -1,8 +1,17 @@
 const route = require('express').Router();
-const path = require('path');
+const sites = require('../../schedule/sites');
 
 route.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../', 'views/index.html'));
+  const list = sites.reduce((acc, data) => {
+    acc.push(data.name);
+    return acc;
+  }, []);
+  res.render('index', { list: list });
+});
+
+route.get('/:site', (req, res) => {
+  const site = req.params.site;
+  res.render('review', { site });
 });
 
 module.exports = route;

@@ -1,4 +1,4 @@
-function appScraperUi() {
+function appScraperUi(site) {
   var $scoreLabel = $('.score label');
   var $scoreCheckbox = $('.score input[type=checkbox]');
   var $dateRadio = $('.date input[type=radio]');
@@ -38,22 +38,22 @@ function appScraperUi() {
 
   // 엑셀 클릭
   $('.btnBox .xlsxBtn').bind('click', function() {
-    xlsxRequest();
+    xlsxRequest(site);
     return false;
   });
 
   // hashchange
   $window.bind('hashchange', function(e) {
-    reviewRequest();
+    reviewRequest(site);
   });
 
   // ready
   if (location.hash === '') {
     hashSet();
-    reviewRequest();
+    reviewRequest(site);
   } else {
     buttonSet();
-    reviewRequest();
+    reviewRequest(site);
   }
 
   // ui
@@ -69,6 +69,7 @@ function resizeSet() {
   var h =
     $(window).height() -
     ($('#header').outerHeight() +
+      $('#siteWrap').outerHeight() +
       $('.btnBox').outerHeight() +
       $('.reviewsTitle').outerHeight() +
       50);
@@ -119,11 +120,11 @@ function hashSet() {
   location.hash = date;
 }
 
-function xlsxRequest() {
+function xlsxRequest(site) {
   var date = $('.date input[type=radio]:checked').val();
   $.ajax({
     method: 'GET',
-    url: '/api/xlsx/' + date,
+    url: '/api/xlsx/' + site + '/' + date,
     contentType: 'application/json',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
@@ -136,7 +137,7 @@ function xlsxRequest() {
   });
 }
 
-function reviewRequest() {
+function reviewRequest(site) {
   var date = location.hash.slice(1);
   var timeDelay = 250;
   var timeFade = 500;
@@ -148,7 +149,7 @@ function reviewRequest() {
   // reviews android
   $.ajax({
     method: 'GET',
-    url: '/api/review' + date + '/android',
+    url: '/api/review/' + site + date + '/android',
     contentType: 'application/json',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
@@ -223,7 +224,7 @@ function reviewRequest() {
   // reviews ios
   $.ajax({
     method: 'GET',
-    url: '/api/review' + date + '/ios',
+    url: '/api/review/' + site + date + '/ios',
     contentType: 'application/json',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
@@ -287,7 +288,7 @@ function reviewRequest() {
   // details
   $.ajax({
     method: 'GET',
-    url: '/api/details',
+    url: '/api/details/' + site,
     contentType: 'application/json',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
@@ -299,7 +300,3 @@ function reviewRequest() {
     }
   });
 }
-
-$(function() {
-  appScraperUi();
-});
