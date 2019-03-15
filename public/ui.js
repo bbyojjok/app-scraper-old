@@ -50,7 +50,6 @@ function appScraperUi(site) {
   // ready
   if (location.hash === '') {
     hashSet();
-    reviewRequest(site);
   } else {
     buttonSet();
     reviewRequest(site);
@@ -292,8 +291,18 @@ function reviewRequest(site) {
     contentType: 'application/json',
     dataType: 'json',
     success: function(data, textStatus, jqXHR) {
-      $reviewsWrapDivFirst.find('.version').text(data.android.version);
-      $reviewsWrapDivSecond.find('.version').text(data.ios.version);
+      $reviewsWrapDivFirst
+        .find('.version')
+        .text(data.android.version)
+        .end()
+        .find('.star')
+        .text(data.android.scoreText);
+      $reviewsWrapDivSecond
+        .find('.version')
+        .text(data.ios.version)
+        .end()
+        .find('.star')
+        .text(data.ios.ratingsAverages);
     },
     error: function(jqXHR, textStatus, errorThrown) {
       alert(jqXHR.responseText);

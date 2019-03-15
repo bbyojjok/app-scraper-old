@@ -1,6 +1,7 @@
 const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
 const appStoreReviews = require('../lib/app-store-reviews');
+const appStoreRatingsAverages = require('../lib/app-store-ratings-averages');
 const schedule = require('node-schedule');
 const sites = require('./sites');
 const { Detail, Review } = require('../server/models');
@@ -49,10 +50,17 @@ function scrapingDetailAppStore(scrapData) {
   return new Promise((resolve, reject) => {
     appStore
       .app({ id: scrapData.site.appStoreId, country: 'kr' })
-      .then(res => {
+      .then(async res => {
         console.log(`[SCRAPING] #${scrapData.site.name} detail appStore`);
         scrapData.detail.ios = res;
-        resolve(scrapData);
+        await appStoreRatingsAverages(scrapData.site.appStoreId)
+          .then(res => {
+            scrapData.detail.ios.ratingsAverages = res;
+            resolve(scrapData);
+          })
+          .catch(err => {
+            reject({ err, scrapData });
+          });
       })
       .catch(err => {
         scrapData.detail.ios = false;
@@ -83,7 +91,7 @@ function scrapingReviewGooglePlay(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 0 ~ 112
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < scrapData.site.googlePlayPage; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject, scrapData));
     }
 
@@ -195,7 +203,7 @@ function scrapingReviewAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
     let reviewsArr = [];
     // 최대 가져올수 있는 페이지 page: 1 ~ 10
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= scrapData.site.appStorePage; i++) {
       reviewsArr = await reviewsArr.concat(await getReviewAppStore(i, reject, scrapData));
     }
     const iosReview = await reviewsArr.reduce(async (acc, data, idx) => {
@@ -283,6 +291,7 @@ function scrapingReviewAppStore(scrapData) {
 }
 
 async function scraping(site) {
+  const siteBak = site;
   const scrap = {
     site,
     detail: {
@@ -380,7 +389,7 @@ async function scraping(site) {
         // 에러 카운트가 3회 까지 재시도
         // 1~10분(초단위) 사이 재시작
         setTimeout(() => {
-          scraping();
+          scraping(siteBak);
         }, getRandom(60, 600) * 1000);
       }
     });
@@ -395,21 +404,10 @@ async function sitesScraping(sites) {
 
 function scheduler() {
   // 테스트
-  //scraping();
-  //sitesScraping(sites);
-
-  // appStore
-  //   .app({ id: 870397981, country: 'kr' })
-  //   .then(res => {
-  //     console.log(res);
-  //   })
-  //   .catch(err => {
-  //     console.log(err);
-  //   });
+  // sitesScraping(sites);
 
   // 스케쥴 등록
   scrapJob = schedule.scheduleJob(getCronRule(), () => {
-    //scraping();
     sitesScraping(sites);
 
     scrapJob.cancel();

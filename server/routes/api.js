@@ -1,5 +1,6 @@
 const route = require('express').Router();
 const sites = require('../../schedule/sites');
+const validationAppid = require('../../schedule/validation');
 const { Detail, Review } = require('../models/index');
 const axios = require('axios');
 const xl = require('excel4node');
@@ -333,8 +334,28 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
 });
 
 /**
- * 리뷰 조회 (그날 스크랩된 리뷰 조회용)
- * TODO 2차 신규 또는 업데이트 된 스크랩 내용을 텔레그램으로 쏴주기
+ * TODO
+ * 구글플레이 및 앱스토어의 appId 유효한지 체크
+ * /validation/appid/com.hmallapp/870397981
+ * example: /validation/appid/안드로이드앱아이디/앱스토어앱아이디
+ */
+route.get('/validation/appid/:androidAppId/:appStoreId', (req, res) => {
+  const androidAppId = req.params.androidAppId;
+  const appStoreId = req.params.appStoreId;
+
+  console.log(androidAppId);
+  console.log(parseInt(appStoreId, 10));
+
+  //validationAppid({});
+
+  res.send('validation');
+});
+
+/**
+ * TODO
+ * 신규 스크랩됬거나 업데이트된 리뷰 조회
+ * android는 업데이트, ios는 수정을 하면 기존 리뷰는 지우고 새로 작성
+ * 신규 또는 업데이트 된 스크랩 내용을 텔레그램으로 쏴주기
  * 구현방법은 추후 논의
  */
 

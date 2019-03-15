@@ -11,6 +11,7 @@
   "dependencies": {
     "app-store-scraper": "^0.15.3",
     "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "date-fns": "^1.30.1",

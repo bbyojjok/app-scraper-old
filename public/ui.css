@@ -320,15 +320,20 @@ ul.reviews.ios > li {
 .reviewsWrap h2 .etc-box {
   float: right;
   margin-left: 10px;
-  margin: 20px 10px 0 10px;
+  margin: 5px 10px 0 10px;
   font-weight: 400;
-  font-size: 15px;
-  color: #999;
+  font-size: 12px;
+  color: #666;
 }
 .reviewsWrap h2 .etc-box > span {
   display: inline-block;
   vertical-align: middle;
   margin-left: 10px;
+}
+.reviewsWrap h2 .etc-box .star,
+.reviewsWrap h2 .etc-box .version,
+.reviewsWrap h2 .etc-box .total {
+  font-weight: 600;
 }
 .reviewsWrap h2 .etc-box .score:before {
   content: '';
@@ -342,6 +347,10 @@ ul.reviews.ios > li {
 }
 .reviewsWrap h2 .etc-box .score span {
   vertical-align: middle;
+}
+.reviewsWrap h2 .etc-box .total-box {
+  display: block;
+  text-align: right;
 }
 .reviewsWrap > div {
   width: 50%;
@@ -492,8 +501,8 @@ button.btnTop {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.19), 0 2px 6px rgba(0, 0, 0, 0.23);
 }
 
-/* mobile 640 이하 일때 */
-@media screen and (max-width: 640px) {
+/* mobile 780 이하 일때 */
+@media screen and (max-width: 780px) {
   #siteWrap img {
     height: 22px;
   }
