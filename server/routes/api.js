@@ -5,11 +5,30 @@ const { Detail, Review } = require('../models/index');
 const axios = require('axios');
 const xl = require('excel4node');
 const makeDir = require('make-dir');
+const localhost = 'http://127.0.0.1:889';
 const moment = require('moment');
 moment.locale('ko');
 
 /**
- * 상세내용 조회
+ * axios request
+ * @param { String } url
+ */
+function getApi(url) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url)
+      .then(res => {
+        resolve(res.data);
+      })
+      .catch(err => {
+        console.log('ERROR:', err);
+        reject(err);
+      });
+  });
+}
+
+/**
+ * GET 상세내용 조회
  * /details/사이트/운영체제
  * example: /details/hmall/android
  */
@@ -21,6 +40,7 @@ route.get('/details/:site/:os?', async (req, res) => {
       if (err) return res.status(401).send(`DB Error: ${err}`);
     })
     .sort({ created: -1 });
+
   if (os) {
     res.send(queryResult[os]);
   } else {
@@ -29,7 +49,7 @@ route.get('/details/:site/:os?', async (req, res) => {
 });
 
 /**
- * 리뷰 조회 (오늘부터 몇일전 기준으로 조회)
+ * GET 리뷰 조회 (오늘부터 몇일전 기준으로 조회)
  * /review/사이트/요일/평점/운영체제
  * example: /review/hmall/7/1/android
  */
@@ -100,14 +120,14 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
 });
 
 /**
- * 엑셀 다운 (요일별로 평점1~5점)
+ * GET 엑셀 다운 (요일별로 평점1~5점)
  * /xlsx/사이트/요일
  * example: /xlsx/hmall/7
  */
 route.get('/xlsx/:site/:date?', async (req, res) => {
   const site = req.params.site;
   const date = req.params.date;
-  const url = `http://127.0.0.1:889/api/review/${site}/${date}/12345/`;
+  const url = `${localhost}/api/review/${site}/${date}/12345/`;
   const today = moment()
     .startOf('day')
     .format('YYYYMMDD');
@@ -199,16 +219,7 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     .setHeight(30)
     .filter();
 
-  const data = await axios
-    .get(url)
-    .then(res => {
-      return res.data;
-    })
-    .catch(err => {
-      console.log('ERROR:', err);
-      return res.send('ERROR:', err);
-    });
-
+  const data = await getApi(url);
   const data_anroid = data.filter(val => {
     return val.os === 'android';
   });
@@ -279,7 +290,7 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
 });
 
 /**
- * 리뷰 조회 (몇일부터 몇일까지 조회)
+ * GET 리뷰 조회 (몇일부터 몇일까지 조회)
  * /reviews/사이트/from/to/운영체제
  * example: /reviews/hmall/20190301/20190313/android
  */
@@ -331,6 +342,19 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
     .sort({ date: -1 });
 
   res.send(queryResult);
+});
+
+/**
+ * POST api 조회, 상세 리뷰 같이 조회
+ * req.body : { details, review_android, review_ios }
+ * example: /
+ */
+route.post('/', async (req, res) => {
+  const data = req.body;
+  const details = await getApi(localhost + data.details);
+  const review_android = await getApi(localhost + data.review_android);
+  const review_ios = await getApi(localhost + data.review_ios);
+  res.send({ details, review_android, review_ios });
 });
 
 /**

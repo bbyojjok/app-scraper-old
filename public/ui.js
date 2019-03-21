@@ -1,157 +1,207 @@
-function appScraperUi(site) {
-  var $scoreLabel = $('.score label');
-  var $scoreCheckbox = $('.score input[type=checkbox]');
-  var $dateRadio = $('.date input[type=radio]');
-  var $window = $(window);
+var AppScraperUi = (function(window, document, $) {
+  function appScraperUi(site) {
+    this.site = site;
+    this.$window = $(window);
+    this.$scoreLabel = $('.score label');
+    this.$scoreCheckbox = $('.score input[type=checkbox]');
+    this.$dateRadio = $('.date input[type=radio]');
+    this.$btnBox = $('.btnBox');
+    this.$xlsxBtn = this.$btnBox.find('.xlsxBtn');
+    this.$btnTop = $('.btnTop');
+    this.$header = $('#header');
+    this.$siteWrap = $('#siteWrap');
+    this.$reviewsTitle = $('.reviewsTitle');
+    this.$reviewsBox = $('.reviewsBox');
+    this.$reviewsAndroid = $('.reviews.android');
+    this.$reviewsIos = $('.reviews.ios');
+    this.$reviewsWrapDivFirst = $('.reviewsWrap > div').eq(0);
+    this.$reviewsWrapDivSecond = $('.reviewsWrap > div').eq(1);
+    this.timeDelay = 250;
+    this.timeFade = 500;
 
-  // 평점 체크박스
-  $scoreLabel.bind('click', function() {
-    if ($('.score label.checked').length === 1 && $(this).hasClass('checked')) {
-      return false;
-    }
-  });
-
-  $scoreCheckbox.bind('change', function() {
-    if ($(this).is(':checked') === false) {
-      $(this)
-        .parent()
-        .removeClass('checked');
-    } else {
-      $(this)
-        .parent()
-        .addClass('checked');
-    }
-    hashSet();
-  });
-
-  // 날짜 라디오박스
-  $dateRadio.bind('change', function() {
-    if ($(this).is(':checked')) {
-      $(this)
-        .parent()
-        .addClass('checked')
-        .siblings()
-        .removeClass('checked');
-    }
-    hashSet();
-  });
-
-  // 엑셀 클릭
-  $('.btnBox .xlsxBtn').bind('click', function() {
-    xlsxRequest(site);
-    return false;
-  });
-
-  // hashchange
-  $window.bind('hashchange', function(e) {
-    reviewRequest(site);
-  });
-
-  // ready
-  if (location.hash === '') {
-    hashSet();
-  } else {
-    buttonSet();
-    reviewRequest(site);
+    this.init();
   }
 
-  // ui
-  $('.btnTop').bind('click', function() {
-    $window.scrollTop(0);
-    return false;
-  });
-  $window.bind('resize.ui', resizeSet);
-  resizeSet();
-}
+  appScraperUi.prototype = {
+    /**
+     * init() binding event
+     */
+    init: function() {
+      var _this = this;
 
-function resizeSet() {
-  var h =
-    $(window).height() -
-    ($('#header').outerHeight() +
-      $('#siteWrap').outerHeight() +
-      $('.btnBox').outerHeight() +
-      $('.reviewsTitle').outerHeight() +
-      50);
-  $('.reviewsBox').height(h);
-}
+      // 평점 체크박스
+      _this.$scoreLabel.bind('click', function() {
+        if ($('.score label.checked').length === 1 && $(this).hasClass('checked')) {
+          return false;
+        }
+      });
+      _this.$scoreCheckbox.bind('change', function() {
+        if ($(this).is(':checked') === false) {
+          $(this)
+            .parent()
+            .removeClass('checked');
+        } else {
+          $(this)
+            .parent()
+            .addClass('checked');
+        }
+        _this.hashSet();
+      });
 
-function buttonSet() {
-  var hashArr = location.hash.slice(2).split('/');
-  var dateValue = hashArr[0];
-  var scoreValue = hashArr[1].split('');
-  var $btnBox = $('.btnBox');
+      // 날짜 라디오박스
+      _this.$dateRadio.bind('change', function() {
+        if ($(this).is(':checked')) {
+          $(this)
+            .parent()
+            .addClass('checked')
+            .siblings()
+            .removeClass('checked');
+        }
+        _this.hashSet();
+      });
 
-  $btnBox
-    .find('.score input[type=checkbox]')
-    .add('.date input[type=radio]')
-    .parent('label')
-    .removeClass('checked');
-  $btnBox
-    .find('.score input[type=checkbox]')
-    .add('.date input[type=radio]')
-    .prop('checked', false);
+      // 엑셀 클릭
+      _this.$xlsxBtn.bind('click', function() {
+        _this.xlsxRequest(_this.site);
+        return false;
+      });
 
-  for (var i = 0, len = scoreValue.length; i < len; i++) {
-    $btnBox
-      .find('.score input[type=checkbox][value=' + scoreValue[i] + ']')
-      .parent('label')
-      .addClass('checked');
-    $btnBox.find('.score input[type=checkbox][value=' + scoreValue[i] + ']').prop('checked', true);
-  }
+      // hashchange
+      _this.$window.bind('hashchange', function(e) {
+        _this.buttonSet();
+        _this.reviewRequest(_this.site);
+      });
 
-  $btnBox
-    .find('.date input[type=radio][value=' + dateValue + ']')
-    .parent('label')
-    .addClass('checked');
-  $btnBox.find('.date input[type=radio][value=' + dateValue + ']').prop('checked', true);
-}
+      // btnTop click
+      _this.$btnTop.bind('click', function() {
+        _this.$window.scrollTop(0);
+        return false;
+      });
 
-function hashSet() {
-  var $checkedScore = $('.score input[type=checkbox]:checked');
-  var date_value = $('.date input[type=radio]:checked').val();
-  var score_value = $checkedScore.length === 0 ? '12345' : '';
-  if ($checkedScore.length !== 0) {
-    for (var i = 0, len = $checkedScore.length; i < len; i++) {
-      score_value += $checkedScore.eq(i).val();
-    }
-  }
-  var date = '/' + date_value + '/' + score_value;
-  location.hash = date;
-}
+      // ready
+      if (location.hash === '') {
+        _this.hashSet();
+      } else {
+        _this.buttonSet();
+        _this.reviewRequest(_this.site);
+      }
 
-function xlsxRequest(site) {
-  var date = $('.date input[type=radio]:checked').val();
-  $.ajax({
-    method: 'GET',
-    url: '/api/xlsx/' + site + '/' + date,
-    contentType: 'application/json',
-    dataType: 'json',
-    success: function(data, textStatus, jqXHR) {
-      window.location.assign('/' + data.file);
-      alert('선택 되어있는 날짜 기준으로\nexcel 파일로 저장되었습니다.');
+      _this.$window.bind('resize.ui', function() {
+        _this.resizeSet(_this);
+      });
+      _this.resizeSet(_this);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      alert(jqXHR.responseText);
-    }
-  });
-}
 
-function reviewRequest(site) {
-  var date = location.hash.slice(1);
-  var timeDelay = 250;
-  var timeFade = 500;
-  var $reviewsAndroid = $('.reviews.android');
-  var $reviewsIos = $('.reviews.ios');
-  var $reviewsWrapDivFirst = $('.reviewsWrap > div').eq(0);
-  var $reviewsWrapDivSecond = $('.reviewsWrap > div').eq(1);
+    /**
+     * review height apply resize event
+     */
+    resizeSet: function(_this) {
+      var reviewsBoxHeight =
+        _this.$window.height() -
+        (_this.$header.outerHeight() +
+          _this.$siteWrap.outerHeight() +
+          _this.$btnBox.outerHeight() +
+          _this.$reviewsTitle.outerHeight() +
+          50);
+      _this.$reviewsBox.height(reviewsBoxHeight);
+    },
 
-  // reviews android
-  $.ajax({
-    method: 'GET',
-    url: '/api/review/' + site + date + '/android',
-    contentType: 'application/json',
-    dataType: 'json',
-    success: function(data, textStatus, jqXHR) {
+    /**
+     * get hash data apply button
+     */
+    buttonSet: function() {
+      var hashArr = location.hash.slice(2).split('/');
+      var dateValue = hashArr[0];
+      var scoreValue = hashArr[1].split('');
+
+      this.$btnBox
+        .find('.score input[type=checkbox]')
+        .add('.date input[type=radio]')
+        .parent('label')
+        .removeClass('checked');
+      this.$btnBox
+        .find('.score input[type=checkbox]')
+        .add('.date input[type=radio]')
+        .prop('checked', false);
+
+      for (var i = 0, len = scoreValue.length; i < len; i++) {
+        this.$btnBox
+          .find('.score input[type=checkbox][value=' + scoreValue[i] + ']')
+          .parent('label')
+          .addClass('checked');
+        this.$btnBox
+          .find('.score input[type=checkbox][value=' + scoreValue[i] + ']')
+          .prop('checked', true);
+      }
+
+      this.$btnBox
+        .find('.date input[type=radio][value=' + dateValue + ']')
+        .parent('label')
+        .addClass('checked');
+      this.$btnBox.find('.date input[type=radio][value=' + dateValue + ']').prop('checked', true);
+    },
+
+    /**
+     * get button data apply hash
+     */
+    hashSet: function() {
+      var $checkedScore = $('.score input[type=checkbox]:checked');
+      var date_value = $('.date input[type=radio]:checked').val();
+      var score_value = $checkedScore.length === 0 ? '12345' : '';
+      if ($checkedScore.length !== 0) {
+        for (var i = 0, len = $checkedScore.length; i < len; i++) {
+          score_value += $checkedScore.eq(i).val();
+        }
+      }
+      var date = '/' + date_value + '/' + score_value;
+      location.hash = date;
+    },
+
+    /**
+     * xlsx reqpuest
+     * @param { String } site
+     */
+    xlsxRequest: function(site) {
+      var date = $('.date input[type=radio]:checked').val();
+      $.ajax({
+        method: 'GET',
+        url: '/api/xlsx/' + site + '/' + date,
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function(data, textStatus, jqXHR) {
+          window.location.assign('/' + data.file);
+          alert('선택 되어있는 날짜 기준으로\nexcel 파일로 저장되었습니다.');
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          alert(jqXHR.responseText);
+        }
+      });
+    },
+
+    /**
+     *
+     * @param { Object } data
+     */
+    parserDetails: function(data) {
+      this.$reviewsWrapDivFirst
+        .find('.version')
+        .text(data.android.version)
+        .end()
+        .find('.star')
+        .text(data.android.scoreText);
+      this.$reviewsWrapDivSecond
+        .find('.version')
+        .text(data.ios.version)
+        .end()
+        .find('.star')
+        .text(data.ios.ratingsAverages);
+    },
+
+    /**
+     *
+     * @param { Object } data
+     */
+    parserReviewAndroid: function(data) {
       var reviews = '';
       if (data.length !== 0) {
         for (var i = 0; i < data.length; i++) {
@@ -202,31 +252,25 @@ function reviewRequest(site) {
         reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
 
-      $reviewsAndroid
+      this.$reviewsAndroid
         .hide()
         .empty()
         .append(reviews)
-        .delay(timeDelay)
-        .fadeIn(timeFade);
-      $reviewsWrapDivFirst
+        .delay(this.timeDelay)
+        .fadeIn(this.timeFade);
+      this.$reviewsWrapDivFirst
         .find('.total')
         .text(data.length)
         .end()
         .find('>div')
         .scrollTop(0);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      alert(jqXHR.responseText);
-    }
-  });
 
-  // reviews ios
-  $.ajax({
-    method: 'GET',
-    url: '/api/review/' + site + date + '/ios',
-    contentType: 'application/json',
-    dataType: 'json',
-    success: function(data, textStatus, jqXHR) {
+    /**
+     *
+     * @param { Object } data
+     */
+    parserReviewIos: function(data) {
       var reviews = '';
       if (data.length !== 0) {
         for (var i = 0; i < data.length; i++) {
@@ -266,46 +310,50 @@ function reviewRequest(site) {
         reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
 
-      $reviewsIos
+      this.$reviewsIos
         .hide()
         .empty()
         .append(reviews)
-        .delay(timeDelay)
-        .fadeIn(timeFade);
-      $reviewsWrapDivSecond
+        .delay(this.timeDelay)
+        .fadeIn(this.timeFade);
+      this.$reviewsWrapDivSecond
         .find('.total')
         .text(data.length)
         .end()
         .find('>div')
         .scrollTop(0);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      alert(jqXHR.responseText);
-    }
-  });
 
-  // details
-  $.ajax({
-    method: 'GET',
-    url: '/api/details/' + site,
-    contentType: 'application/json',
-    dataType: 'json',
-    success: function(data, textStatus, jqXHR) {
-      $reviewsWrapDivFirst
-        .find('.version')
-        .text(data.android.version)
-        .end()
-        .find('.star')
-        .text(data.android.scoreText);
-      $reviewsWrapDivSecond
-        .find('.version')
-        .text(data.ios.version)
-        .end()
-        .find('.star')
-        .text(data.ios.ratingsAverages);
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      alert(jqXHR.responseText);
+    /**
+     *
+     * @param { String } site
+     */
+    reviewRequest: function(site) {
+      var _this = this;
+      var date = location.hash.slice(1);
+      var reqpuestData = {
+        review_android: '/api/review/' + site + date + '/android',
+        review_ios: '/api/review/' + site + date + '/ios',
+        details: '/api/details/' + site
+      };
+
+      // api 조회
+      $.ajax({
+        method: 'POST',
+        url: '/api',
+        dataType: 'json',
+        data: reqpuestData,
+        success: function(data, textStatus, jqXHR) {
+          _this.parserDetails(data.details);
+          _this.parserReviewAndroid(data.review_android);
+          _this.parserReviewIos(data.review_ios);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          alert(jqXHR.responseText);
+        }
+      });
     }
-  });
-}
+  };
+
+  return appScraperUi;
+})(window, document, jQuery);

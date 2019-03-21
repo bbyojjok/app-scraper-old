@@ -1,6 +1,12 @@
 const moment = require('moment');
 moment.locale('ko');
 
+/**
+ * get random
+ * @param { Integer } min
+ * @param { Integer } max
+ * @param { Integer } num
+ */
 function getRandom(min, max, num) {
   let randomResult = [];
   let randomList = [];
@@ -15,6 +21,10 @@ function getRandom(min, max, num) {
   return randomResult.length === 1 ? randomResult[0] : randomResult;
 }
 
+/**
+ * string to date
+ * @param { String } str
+ */
 function strToDate(str) {
   const result = str
     .split(' ')
@@ -27,6 +37,9 @@ function strToDate(str) {
     .format();
 }
 
+/**
+ * object deep compare
+ */
 function deepCompare() {
   var i, l, leftChain, rightChain;
 
@@ -128,6 +141,10 @@ function deepCompare() {
   return true;
 }
 
+/**
+ * object is undefined to null
+ * @param { Object } obj
+ */
 function undefinedToNull(obj) {
   return Object.keys(obj).reduce((newObj, k) => {
     if (typeof obj[k] === 'object') {
@@ -139,6 +156,11 @@ function undefinedToNull(obj) {
   }, {});
 }
 
+/**
+ * object key remove
+ * @param { Object } obj
+ * @param { String } prop
+ */
 function objectKeyRemove(obj, prop) {
   return Object.keys(obj).reduce((newObj, key) => {
     if (key !== prop) {
@@ -148,6 +170,9 @@ function objectKeyRemove(obj, prop) {
   }, {});
 }
 
+/**
+ * get cron rule
+ */
 function getCronRule() {
   /*
     #Cron-style Scheduling

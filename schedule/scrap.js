@@ -123,7 +123,7 @@ function scrapingReviewGooglePlay(scrapData) {
           );
           await scrapData.review.googlePlay.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews googlePlay, 중복된 리뷰 업데이트 ${idx}`
+            `[DB] #${scrapData.site.name} reviews googlePlay, 중복되는 업데이트된 리뷰 ${idx}`
           );
         }
       } else {
@@ -137,7 +137,7 @@ function scrapingReviewGooglePlay(scrapData) {
             .format()
         });
         await console.log(
-          `[SCRAPING] #${scrapData.site.name} reviews googlePlay, 중복되지 않는 리뷰 ${idx}`
+          `[SCRAPING] #${scrapData.site.name} reviews googlePlay, 중복되지 않는 신규 리뷰 ${idx}`
         );
       }
 
@@ -232,7 +232,7 @@ function scrapingReviewAppStore(scrapData) {
           );
           await scrapData.review.appStore.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews appStore, 중복된 리뷰 업데이트 ${idx}`
+            `[DB] #${scrapData.site.name} reviews appStore, 중복되는 업데이트된 리뷰 ${idx}`
           );
         }
       } else {
@@ -246,7 +246,7 @@ function scrapingReviewAppStore(scrapData) {
             .format()
         });
         await console.log(
-          `[SCRAPING] #${scrapData.site.name} reviews appStore, 중복되지 않는 리뷰 ${idx}`
+          `[SCRAPING] #${scrapData.site.name} reviews appStore, 중복되지 않는 신규 리뷰 ${idx}`
         );
       }
 

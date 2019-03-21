@@ -501,6 +501,25 @@ button.btnTop {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.19), 0 2px 6px rgba(0, 0, 0, 0.23);
 }
 
+.progressWrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 4px;
+}
+.progressWrap .progress {
+  display: block;
+  width: 0%;
+  height: 100%;
+  background-color: #5c91bf;
+  transition: width 1s;
+}
+.progressWrap .progress.hide {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
 /* mobile 780 이하 일때 */
 @media screen and (max-width: 780px) {
   #siteWrap img {
