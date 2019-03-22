@@ -123,7 +123,7 @@ function scrapingReviewGooglePlay(scrapData) {
           );
           await scrapData.review.googlePlay.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews googlePlay, 중복되는 업데이트된 리뷰 ${idx}`
+            `[DB] #${scrapData.site.name} reviews googlePlay, 중복되어 업데이트된 리뷰 ${idx}`
           );
         }
       } else {
@@ -232,7 +232,7 @@ function scrapingReviewAppStore(scrapData) {
           );
           await scrapData.review.appStore.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews appStore, 중복되는 업데이트된 리뷰 ${idx}`
+            `[DB] #${scrapData.site.name} reviews appStore, 중복되어 업데이트된 리뷰 ${idx}`
           );
         }
       } else {

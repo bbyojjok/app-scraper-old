@@ -90,6 +90,10 @@ var AppScraperUi = (function(window, document, $) {
         _this.resizeSet(_this);
       });
       _this.resizeSet(_this);
+
+      // progress bar set
+      NProgress.configure({ easing: 'ease', speed: 1000 });
+      NProgress.configure({ trickleSpeed: 100 });
     },
 
     /**
@@ -163,6 +167,7 @@ var AppScraperUi = (function(window, document, $) {
      */
     xlsxRequest: function(site) {
       var date = $('.date input[type=radio]:checked').val();
+      NProgress.start();
       $.ajax({
         method: 'GET',
         url: '/api/xlsx/' + site + '/' + date,
@@ -170,6 +175,7 @@ var AppScraperUi = (function(window, document, $) {
         dataType: 'json',
         success: function(data, textStatus, jqXHR) {
           window.location.assign('/' + data.file);
+          NProgress.done();
           alert('선택 되어있는 날짜 기준으로\nexcel 파일로 저장되었습니다.');
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -179,7 +185,7 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     *
+     * parser details
      * @param { Object } data
      */
     parserDetails: function(data) {
@@ -198,7 +204,7 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     *
+     * parser review android
      * @param { Object } data
      */
     parserReviewAndroid: function(data) {
@@ -267,7 +273,7 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     *
+     * parser review ios
      * @param { Object } data
      */
     parserReviewIos: function(data) {
@@ -325,7 +331,7 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     *
+     * api request
      * @param { String } site
      */
     reviewRequest: function(site) {
@@ -337,7 +343,7 @@ var AppScraperUi = (function(window, document, $) {
         details: '/api/details/' + site
       };
 
-      // api 조회
+      NProgress.start();
       $.ajax({
         method: 'POST',
         url: '/api',
@@ -347,6 +353,7 @@ var AppScraperUi = (function(window, document, $) {
           _this.parserDetails(data.details);
           _this.parserReviewAndroid(data.review_android);
           _this.parserReviewIos(data.review_ios);
+          NProgress.done();
         },
         error: function(jqXHR, textStatus, errorThrown) {
           alert(jqXHR.responseText);
