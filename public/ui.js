@@ -29,7 +29,7 @@ var AppScraperUi = (function(window, document, $) {
     init: function() {
       var _this = this;
 
-      // 평점 체크박스
+      // score check
       _this.$scoreLabel.bind('click', function() {
         if ($('.score label.checked').length === 1 && $(this).hasClass('checked')) {
           return false;
@@ -48,7 +48,7 @@ var AppScraperUi = (function(window, document, $) {
         _this.hashSet();
       });
 
-      // 날짜 라디오박스
+      // date radio
       _this.$dateRadio.bind('change', function() {
         if ($(this).is(':checked')) {
           $(this)
@@ -60,7 +60,7 @@ var AppScraperUi = (function(window, document, $) {
         _this.hashSet();
       });
 
-      // 엑셀 클릭
+      // xlsx click
       _this.$xlsxBtn.bind('click', function() {
         _this.xlsxRequest(_this.site);
         return false;
@@ -92,8 +92,7 @@ var AppScraperUi = (function(window, document, $) {
       _this.resizeSet(_this);
 
       // progress bar set
-      NProgress.configure({ easing: 'ease', speed: 1000 });
-      NProgress.configure({ trickleSpeed: 100 });
+      NProgress.configure({ speed: 750, trickleSpeed: 100, showSpinner: false });
     },
 
     /**
@@ -174,8 +173,8 @@ var AppScraperUi = (function(window, document, $) {
         contentType: 'application/json',
         dataType: 'json',
         success: function(data, textStatus, jqXHR) {
-          window.location.assign('/' + data.file);
           NProgress.done();
+          window.location.assign('/' + data.file);
           alert('선택 되어있는 날짜 기준으로\nexcel 파일로 저장되었습니다.');
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -208,6 +207,8 @@ var AppScraperUi = (function(window, document, $) {
      * @param { Object } data
      */
     parserReviewAndroid: function(data) {
+      console.log('#parserReviewAndroid data.length', data.slice(0, 100));
+
       var reviews = '';
       if (data.length !== 0) {
         for (var i = 0; i < data.length; i++) {
@@ -350,7 +351,9 @@ var AppScraperUi = (function(window, document, $) {
         dataType: 'json',
         data: reqpuestData,
         success: function(data, textStatus, jqXHR) {
-          _this.parserDetails(data.details);
+          if (data.details !== '') {
+            _this.parserDetails(data.details);
+          }
           _this.parserReviewAndroid(data.review_android);
           _this.parserReviewIos(data.review_ios);
           NProgress.done();
@@ -364,3 +367,98 @@ var AppScraperUi = (function(window, document, $) {
 
   return appScraperUi;
 })(window, document, jQuery);
+
+function adminSet() {
+  var base64 = null;
+  $('#fileUploadInput').bind('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function() {
+        base64 = reader.result;
+        $('#uploadImage')
+          .empty()
+          .append('<img src="' + reader.result + '" alt="" />');
+      };
+      reader.onerror = function(error) {
+        console.log('Error: ', error);
+      };
+    } else {
+      base64 = null;
+      $('#uploadImage').empty();
+    }
+  });
+
+  $('#fileUploadSubmit').bind('click', function() {
+    var name = $('input[name=name]').val();
+    var googlePlayAppId = $('input[name=googlePlayAppId]').val();
+    var appStoreId = $('input[name=appStoreId]').val();
+
+    if (name == '' || googlePlayAppId == '' || appStoreId == '' || base64 == null) {
+      alert('입력필드가 비어있습니다');
+      return;
+    }
+
+    var reqpuestData = {
+      name: name,
+      googlePlayAppId: googlePlayAppId,
+      appStoreId: appStoreId,
+      image: base64
+    };
+
+    $.ajax({
+      method: 'POST',
+      url: '/api/sites',
+      dataType: 'json',
+      data: reqpuestData,
+      success: function(data, textStatus, jqXHR) {
+        alert('스크랩할 사이트가 추가됬습니다.');
+        location.reload(true);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert(jqXHR.responseText);
+      }
+    });
+  });
+}
+
+function loginSet() {
+  $('#loginBtn').bind('click', function() {
+    var username = $('input[name=username]').val();
+    var password = $('input[name=password]').val();
+
+    if (username == '' || password == '') {
+      alert('입력필드가 비어있습니다');
+      return;
+    }
+
+    var reqpuestData = {
+      username: username,
+      password: password
+    };
+
+    $.ajax({
+      method: 'POST',
+      url: '/api/login',
+      dataType: 'json',
+      data: reqpuestData,
+      success: function(data, textStatus, jqXHR) {
+        console.log(data);
+        if (data.success) {
+          alert('로그인 성공');
+          location.href = '/';
+        }
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert(jqXHR.responseText);
+      }
+    });
+  });
+
+  $('input[name=password]').bind('keydown', function(e) {
+    if (e.keyCode === 13) {
+      $('#loginBtn').trigger('click');
+    }
+  });
+}

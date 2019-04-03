@@ -3,7 +3,7 @@ extends layout.pug
 block contents
   div(id='sitesWrap')
     ul
-      each item in list
+      -for (var i=0, len = list.length; i < len; i++)
         li
-          a(href='/'+item title=item+' 리뷰 보러가기')
-            img(src='/images/logo-'+item+'.png' alt=item)
+          a(href='/'+list[i].name title=list[i].name+' 리뷰 보러가기')
+            img(src=list[i].image alt=list[i].name)

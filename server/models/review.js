@@ -1,23 +1,17 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const sites = require('../../schedule/sites');
+const { createReviewModel } = require('./lib');
+const axios = require('axios');
 
-const SitesReview = sites.reduce((acc, data, idx) => {
-  acc[data.name] = mongoose.model(
-    `Review${data.name}`,
-    new Schema(
-      {
-        name: String,
-        review: Schema.Types.Mixed,
-        os: String,
-        date: { type: Date },
-        created: { type: Date },
-        updated: { type: Date }
-      },
-      { collection: `review-${data.name}` }
-    )
-  );
-  return acc;
-}, {});
-
-module.exports = SitesReview;
+module.exports = (async () => {
+  const sites = await axios
+    .get('http://127.0.0.1:889/api/sites')
+    .then(res => {
+      return res.data;
+    })
+    .catch(err => {
+      return false;
+    });
+  return sites.reduce((acc, data, idx) => {
+    acc[data.name] = createReviewModel(data.name);
+    return acc;
+  }, {});
+})();

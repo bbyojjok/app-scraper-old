@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const session = require('express-session');
 const path = require('path');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -24,6 +25,13 @@ app.locals.pretty = true;
 app.set('views', path.join(__dirname, '../', 'views'));
 app.set('view engine', 'pug');
 
+app.use(
+  session({
+    secret: '@$#^#!(!@JE!@(@!#',
+    resave: false,
+    saveUninitialized: true
+  })
+);
 app.use(helmet());
 app.use(compression());
 //app.use(morgan('dev'));
@@ -33,7 +41,10 @@ app.use(bodyParser.json());
 app.use('/', express.static(path.join(__dirname, '../', 'public')));
 app.use('/', route);
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`[SERVER] Express is listening on port ${port}`);
-  scheduler();
+
+  await require('./models/detail');
+  await require('./models/review');
+  await scheduler();
 });

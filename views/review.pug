@@ -2,7 +2,7 @@ extends layout.pug
 
 block contents
   div(id='siteWrap')
-    img(src='/images/logo-'+site+'.png' alt=site)
+    img(src=image alt=site)
   div(class='btnBox')
     div(class='score')
       label(for='score1' class='checked' title='별점1')
@@ -37,7 +37,7 @@ block contents
         input(id='date5' type='radio' name='date' value='180')
         | 180 일
     div(class='other')
-      button(class='xlsxBtn' title='엑셀 다운') 엑셀 다운
+      button(class='xlsxBtn' title='선택되어 있는 날짜 기준으로 엑셀 다운') 엑셀 다운
   div(class='reviewsWrap')
     div
       h2(class='reviewsTitle')
@@ -73,6 +73,5 @@ block contents
 block script
   script.
       $(function() {
-        var site = '#{site}';
-        new AppScraperUi(site);
+        new AppScraperUi('#{site}');
       });

@@ -1,21 +1,17 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const sites = require('../../schedule/sites');
+const { createDetailModel } = require('./lib');
+const axios = require('axios');
 
-const SitesDetail = sites.reduce((acc, data, idx) => {
-  acc[data.name] = mongoose.model(
-    `Detail${data.name}`,
-    new Schema(
-      {
-        name: String,
-        android: Schema.Types.Mixed,
-        ios: Schema.Types.Mixed,
-        created: { type: Date }
-      },
-      { collection: `detail-${data.name}` }
-    )
-  );
-  return acc;
-}, {});
-
-module.exports = SitesDetail;
+module.exports = (async () => {
+  const sites = await axios
+    .get('http://127.0.0.1:889/api/sites')
+    .then(res => {
+      return res.data;
+    })
+    .catch(err => {
+      return false;
+    });
+  return sites.reduce((acc, data, idx) => {
+    acc[data.name] = createDetailModel(data.name);
+    return acc;
+  }, {});
+})();

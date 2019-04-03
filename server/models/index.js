@@ -1,4 +1,3 @@
-const Detail = require('./detail');
-const Review = require('./review');
+const Sites = require('./sites');
 
-module.exports = { Detail, Review };
+module.exports = { Sites };

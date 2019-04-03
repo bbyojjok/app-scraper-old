@@ -1,0 +1,20 @@
+extends layout.pug
+
+block contents
+  div(id='adminWrap')
+    div(class='areaTitle')
+      h2 login
+    div(class='areaRegister')
+      div(class='inputBox')
+        div(class='item')
+          input(type='text' name='username' placeholder='username')
+        div(class='item')
+          input(type='password' name='password' placeholder='password')
+      div(class='btnRegisterBox')
+        button(id='loginBtn' class='btnRegister') login
+
+block script
+  script.
+      $(function() {
+        loginSet();
+      });

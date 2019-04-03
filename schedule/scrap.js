@@ -3,8 +3,8 @@ const appStore = require('app-store-scraper');
 const appStoreReviews = require('../lib/app-store-reviews');
 const appStoreRatingsAverages = require('../lib/app-store-ratings-averages');
 const schedule = require('node-schedule');
-const sites = require('./sites');
-const { Detail, Review } = require('../server/models');
+const mongoose = require('mongoose');
+const axios = require('axios');
 const {
   getRandom,
   strToDate,
@@ -15,20 +15,10 @@ const {
 } = require('./lib');
 const moment = require('moment');
 moment.locale('ko');
-
-const target = {
-  hmall: {
-    name: 'hmall',
-    googlePlayAppId: 'com.hmallapp',
-    appStoreId: 870397981
-  },
-  thehyundai: {
-    name: 'thehyundai',
-    googlePlayAppId: 'com.hdmallapp.thehyundai',
-    appStoreId: 1067693191
-  }
-};
 let scrapJob;
+
+const sites = require('./sites');
+//let { Detail, Review } = require('../server/models');
 
 function scrapingDetailGooglePlay(scrapData) {
   return new Promise((resolve, reject) => {
@@ -97,7 +87,7 @@ function scrapingReviewGooglePlay(scrapData) {
 
     const androidReview = await reviewsArr.reduce(async (acc, data, idx) => {
       let accumulator = await acc.then();
-      let queryResult = await Review[scrapData.site.name].findOne({ 'review.id': data.id }, err => {
+      let queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
         if (err) throw err;
       });
 
@@ -105,7 +95,7 @@ function scrapingReviewGooglePlay(scrapData) {
         let before = await objectKeyRemove(queryResult.review, 'userImage');
         let after = await objectKeyRemove(data, 'userImage');
         if (!(await deepCompare(before, await undefinedToNull(after)))) {
-          const updateResult = await Review[scrapData.site.name].findOneAndUpdate(
+          const updateResult = await scrapData.site.Review.findOneAndUpdate(
             { 'review.id': data.id },
             {
               $set: {
@@ -128,7 +118,7 @@ function scrapingReviewGooglePlay(scrapData) {
         }
       } else {
         await accumulator.push({
-          name: target.hmall.name,
+          name: scrapData.site.name,
           review: await undefinedToNull(data),
           os: 'android',
           date: await strToDate(data.date),
@@ -164,10 +154,10 @@ function scrapingReviewGooglePlay(scrapData) {
               androidReview.length
             }`
           );
-          Review[scrapData.site.name].insertMany(androidReview, (err, docs) => {
+          scrapData.site.Review.insertMany(androidReview, (err, docs) => {
             if (err) throw err;
             console.log(
-              `[DB] #${scrapData.site.name} scraping review data saved ${moment().format(
+              `[DB] #${scrapData.site.name} scraping android review data saved ${moment().format(
                 'YYYY-MM-DD HH:mm:ss'
               )}`
             );
@@ -208,13 +198,13 @@ function scrapingReviewAppStore(scrapData) {
     }
     const iosReview = await reviewsArr.reduce(async (acc, data, idx) => {
       let accumulator = await acc.then();
-      let queryResult = await Review[scrapData.site.name].findOne({ 'review.id': data.id }, err => {
+      let queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
         if (err) throw err;
       });
 
       if (queryResult) {
         if (!(await deepCompare(queryResult.review, await undefinedToNull(data)))) {
-          const updateResult = await Review[scrapData.site.name].findOneAndUpdate(
+          const updateResult = await scrapData.site.Review.findOneAndUpdate(
             { 'review.id': data.id },
             {
               $set: {
@@ -237,7 +227,7 @@ function scrapingReviewAppStore(scrapData) {
         }
       } else {
         await accumulator.push({
-          name: target.hmall.name,
+          name: scrapData.site.name,
           review: await undefinedToNull(data),
           os: 'ios',
           date: await strToDate(data.updated),
@@ -269,10 +259,10 @@ function scrapingReviewAppStore(scrapData) {
           console.log(
             `[SCRAPING] #${scrapData.site.name} ios 리뷰 신규 스크랩된 갯수: ${iosReview.length}`
           );
-          Review[scrapData.site.name].insertMany(iosReview, (err, docs) => {
+          scrapData.site.Review.insertMany(iosReview, (err, docs) => {
             if (err) throw err;
             console.log(
-              `[DB] #${scrapData.site.name} scraping review data saved ${moment().format(
+              `[DB] #${scrapData.site.name} scraping ios review data saved ${moment().format(
                 'YYYY-MM-DD HH:mm:ss'
               )}`
             );
@@ -331,7 +321,7 @@ async function scraping(site) {
       scrapData.detail.created = moment()
         .tz('Asia/Seoul')
         .format();
-      let detail = new Detail[scrapData.site.name](scrapData.detail);
+      let detail = new scrapData.site.Detail(scrapData.detail);
       try {
         let detailResult = await detail.save(err => {
           if (err) throw err;
@@ -376,10 +366,10 @@ async function scraping(site) {
             )}`
           );
 
-          // 6시간 이후 다시 스케쥴 등록
+          // 7시간 이후 다시 스케쥴 등록
           await setTimeout(() => {
             scrapJob.reschedule(getCronRule());
-          }, 1000 * 60 * 60 * 6);
+          }, 1000 * 60 * 60 * 7);
           return detailResult;
         } catch (err) {
           console.error(err);
@@ -402,20 +392,50 @@ async function sitesScraping(sites) {
   }
 }
 
-function scheduler() {
+function scheduler(site) {
   // 테스트
-  // sitesScraping(sites);
+  if (typeof site == 'object') {
+    scraping(site);
+  } else {
+    // axios
+    //   .get('http://127.0.0.1:889/api/sites')
+    //   .then(res => {
+    //     const sites = res.data.reduce((acc, data, idx) => {
+    //       data.Detail = mongoose.model(`Detail-${data.name}`);
+    //       data.Review = mongoose.model(`Review-${data.name}`);
+    //       acc.push(data);
+    //       return acc;
+    //     }, []);
+    //     sitesScraping(sites);
+    //   })
+    //   .catch(err => {
+    //     console.error(err);
+    //   });
 
-  // 스케쥴 등록
-  scrapJob = schedule.scheduleJob(getCronRule(), () => {
-    sitesScraping(sites);
+    // 스케쥴 등록
+    scrapJob = schedule.scheduleJob(getCronRule(), () => {
+      axios
+        .get('http://127.0.0.1:889/api/sites')
+        .then(res => {
+          const sites = res.data.reduce((acc, data, idx) => {
+            data.Detail = mongoose.model(`Detail-${data.name}`);
+            data.Review = mongoose.model(`Review-${data.name}`);
+            acc.push(data);
+            return acc;
+          }, []);
+          sitesScraping(sites);
+        })
+        .catch(err => {
+          console.error(err);
+        });
 
-    scrapJob.cancel();
-    // 6시간 이후 다시 스케쥴 등록
-    setTimeout(() => {
-      scrapJob.reschedule(getCronRule());
-    }, 1000 * 60 * 60 * 6);
-  });
+      scrapJob.cancel();
+      // 7시간 이후 다시 스케쥴 등록
+      setTimeout(() => {
+        scrapJob.reschedule(getCronRule());
+      }, 1000 * 60 * 60 * 7);
+    });
+  }
 }
 
 module.exports = scheduler;

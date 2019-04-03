@@ -1,31 +1,15 @@
 const route = require('express').Router();
-const sites = require('../../schedule/sites');
 const validationAppid = require('../../schedule/validation');
-const { Detail, Review } = require('../models/index');
-const axios = require('axios');
+const Sites = require('../models/sites');
 const xl = require('excel4node');
 const makeDir = require('make-dir');
+const { getApi } = require('../lib');
 const localhost = 'http://127.0.0.1:889';
+const mongoose = require('mongoose');
+const { createDetailModel, createReviewModel } = require('../models/lib');
+const scheduler = require('../../schedule/scrap');
 const moment = require('moment');
 moment.locale('ko');
-
-/**
- * axios request
- * @param { String } url
- */
-function getApi(url) {
-  return new Promise((resolve, reject) => {
-    axios
-      .get(url)
-      .then(res => {
-        resolve(res.data);
-      })
-      .catch(err => {
-        console.log('ERROR:', err);
-        reject(err);
-      });
-  });
-}
 
 /**
  * GET 상세내용 조회
@@ -35,11 +19,11 @@ function getApi(url) {
 route.get('/details/:site/:os?', async (req, res) => {
   const site = req.params.site;
   const os = req.params.os;
-  const queryResult = await Detail[site]
-    .findOne({}, err => {
-      if (err) return res.status(401).send(`DB Error: ${err}`);
-    })
-    .sort({ created: -1 });
+  const Detail = mongoose.model(`Detail-${site}`);
+
+  const queryResult = await Detail.findOne({}, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ created: -1 });
 
   if (os) {
     res.send(queryResult[os]);
@@ -58,6 +42,7 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
   const date = req.params.date;
   const score = req.params.score;
   const os = req.params.os;
+  const Review = mongoose.model(`Review-${site}`);
   // 오늘까지
   const today = moment()
     .startOf('day')
@@ -94,11 +79,9 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
     options.os = os;
   }
 
-  const queryResult = await Review[site]
-    .find(options, err => {
-      if (err) return res.status(401).send(`DB Error: ${err}`);
-    })
-    .sort({ date: -1 });
+  const queryResult = await Review.find(options, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ date: -1 });
 
   const result = await queryResult.reduce((acc, data) => {
     let dateFormatChange = data;
@@ -296,6 +279,7 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
  */
 route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
   const site = req.params.site;
+  const Review = mongoose.model(`Review-${site}`);
   const today = moment()
     .startOf('day')
     .format();
@@ -335,11 +319,9 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
   console.log('prevday:', prevday);
   console.log('options', options);
 
-  const queryResult = await Review[site]
-    .find(options, err => {
-      if (err) return res.status(401).send(`DB Error: ${err}`);
-    })
-    .sort({ date: -1 });
+  const queryResult = await Review.find(options, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ date: -1 });
 
   res.send(queryResult);
 });
@@ -358,21 +340,184 @@ route.post('/', async (req, res) => {
 });
 
 /**
- * TODO
- * 구글플레이 및 앱스토어의 appId 유효한지 체크
- * /validation/appid/com.hmallapp/870397981
- * example: /validation/appid/안드로이드앱아이디/앱스토어앱아이디
+ * GET sites 조회
  */
-route.get('/validation/appid/:androidAppId/:appStoreId', (req, res) => {
-  const androidAppId = req.params.androidAppId;
-  const appStoreId = req.params.appStoreId;
+route.get('/sites', async (req, res) => {
+  const queryResult = await Sites.find({}, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  });
+  res.send(queryResult);
+});
 
-  console.log(androidAppId);
-  console.log(parseInt(appStoreId, 10));
+/**
+ * POST sites 생성
+ * req.body : { name, googlePlayAppId, appStoreId }
+ * example : "site": {
+      "name": "hmall",
+      "googlePlayAppId": "com.hmallapp",
+      "appStoreId": 870397981
+    }
+ */
+route.post('/sites', async (req, res) => {
+  const data = req.body;
+  const name = data.name;
+  const googlePlayAppId = data.googlePlayAppId;
+  const appStoreId = parseInt(data.appStoreId, 10);
+  const image = data.image;
 
-  //validationAppid({});
+  // name 문자열인지 공백인지
+  if (typeof name !== 'string') {
+    return res.status(400).json({
+      error: 'not string name'
+    });
+  }
+  if (name === '') {
+    return res.status(400).json({
+      error: 'empty name'
+    });
+  }
 
-  res.send('validation');
+  // googlePlayAppId 문자열인지 공백인지
+  if (typeof googlePlayAppId !== 'string') {
+    return res.status(400).json({
+      error: 'not string googlePlayAppId'
+    });
+  }
+  if (googlePlayAppId === '') {
+    return res.status(400).json({
+      error: 'empty googlePlayAppId'
+    });
+  }
+
+  // appStoreId 숫자인지
+  if (typeof appStoreId !== 'number') {
+    return res.status(400).json({
+      error: 'not number appStoreId'
+    });
+  }
+
+  // image 문자열인지 공백인지
+  if (typeof image !== 'string') {
+    return res.status(400).json({
+      error: 'not string image'
+    });
+  }
+  if (image === '') {
+    return res.status(400).json({
+      error: 'empty image'
+    });
+  }
+
+  // 존재하는 name, googlePlayAppId, appStoreId 있는지
+  const queryResult = await Sites.find(
+    {
+      $or: [{ name }, { googlePlayAppId }, { appStoreId }]
+    },
+    (err, site) => {
+      if (err) throw err;
+    }
+  );
+  if (queryResult.length > 0) {
+    return res.status(400).json({
+      error: 'exist name or googlePlayAppId or appStoreId'
+    });
+  }
+
+  // googlePlayAppId, appStoreId 유효한지
+  const validation = await validationAppid({ googlePlayAppId, appStoreId });
+  if (validation.failure === 'googlePlayAppId') {
+    return res.status(400).json({
+      error: 'googlePlayAppId validation failed'
+    });
+  } else if (validation.failure === 'appStoreId') {
+    return res.status(400).json({
+      error: 'appStoreId validation failed'
+    });
+  }
+
+  // site 저장
+  let site = new Sites({
+    name,
+    googlePlayAppId,
+    appStoreId,
+    image
+  });
+  site.save(async err => {
+    if (err) throw err;
+
+    // db 저장후에 모델 생성 및 스크랩 시작
+    // await createDetailModel(name);
+    // await createReviewModel(name);
+    // await scheduler({
+    //   name,
+    //   googlePlayAppId,
+    //   googlePlayPage: 112,
+    //   appStoreId,
+    //   appStorePage: 10,
+    //   Detail: mongoose.model(`Detail-${name}`),
+    //   Review: mongoose.model(`Review-${name}`)
+    // });
+
+    return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
+  });
+});
+
+/**
+ * PUT sites 수정
+ */
+route.put('/sites', async (req, res) => {
+  const data = req.body;
+  const name = data.name;
+  const googlePlayAppId = data.googlePlayAppId;
+  const appStoreId = data.appStoreId;
+  console.log('GET /api/modify 사이트 수정', name);
+
+  console.log(mongoose.Types.ObjectId.isValid(name));
+
+  res.send('modify');
+});
+
+/**
+ * DELETE sites 삭제
+ */
+route.delete('/sites/:name', async (req, res) => {
+  const name = req.params.name;
+  console.log('GET /api/delete 사이트 삭제', name);
+
+  res.send('delete');
+});
+
+/**
+ * POST login 로그인
+ */
+route.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  // 패스워드 문자열인지 체크
+  if (typeof password !== 'string') {
+    return res.status(401).json({ error: 'not string password' });
+  }
+
+  // admin 계정이 맞는지 확인
+  if (username !== 'admin' && password !== 'hmall2143') {
+    return res.status(401).json({ error: 'worng username and password' });
+  }
+
+  let session = req.session;
+  session.logingInfo = { username };
+
+  return res.send({ success: true });
+});
+
+/**
+ * GET logout 로그아웃
+ */
+route.get('/logout', async (req, res) => {
+  let session = req.session;
+  session.destroy(err => {
+    if (err) throw err;
+    return res.redirect('/');
+  });
 });
 
 /**
@@ -380,7 +525,7 @@ route.get('/validation/appid/:androidAppId/:appStoreId', (req, res) => {
  * 신규 스크랩됬거나 업데이트된 리뷰 조회
  * android는 업데이트, ios는 수정을 하면 기존 리뷰는 지우고 새로 작성
  * 신규 또는 업데이트 된 스크랩 내용을 텔레그램으로 쏴주기
- * 구현방법은 추후 논의
+ * 구현방법은 추후 고민
  */
 
 module.exports = route;

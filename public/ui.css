@@ -151,7 +151,7 @@ legend,
   font-weight: 600;
   color: #fff;
 }
-#header .btnBack {
+#header .btn {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -161,7 +161,23 @@ legend,
   height: 32px;
   font-size: 0;
   line-height: 0;
-  background: url(/images/icon-back.png) no-repeat 0 0;
+}
+#header .btnBack {
+  background: url('/images/icon-back.png') no-repeat 0 0;
+  background-size: 32px auto;
+}
+
+#header .btnAdmin {
+  left: auto;
+  right: 10px;
+  background: url('/images/icon-admin.png') no-repeat 0 0;
+  background-size: 32px auto;
+}
+
+#header .btnLogin {
+  left: auto;
+  right: 10px;
+  background: url('/images/icon-login.png') no-repeat 0 0;
   background-size: 32px auto;
 }
 
@@ -499,6 +515,107 @@ button.btnTop {
 }
 #sitesWrap ul li a:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.19), 0 2px 6px rgba(0, 0, 0, 0.23);
+}
+
+#adminWrap {
+  padding: 20px;
+}
+#adminWrap .areaTitle {
+  text-align: center;
+}
+#adminWrap .areaList {
+  margin-top: 20px;
+}
+#adminWrap .areaList li {
+  margin-top: 20px;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  font-size: 14px;
+  line-height: 1.6em;
+  color: #333;
+  background-color: #494c4e;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+#adminWrap .areaList li:first-child {
+  margin-top: 0;
+}
+
+#adminWrap .areaList .top {
+  padding-bottom: 5px;
+}
+#adminWrap .areaList .top > span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#adminWrap .areaList .top .num {
+  margin-right: 20px;
+  color: #999;
+}
+
+#adminWrap .areaList .middle div {
+  color: #c6f079;
+}
+#adminWrap .areaList .middle div .inner {
+  padding-left: 30px;
+}
+#adminWrap .areaList .middle div .point {
+  color: #e3914e;
+}
+#adminWrap .areaList .middle div .int {
+  color: #e3775c;
+}
+#adminWrap .areaList .middle div .ellipsisTxt {
+  display: inline-block;
+  vertical-align: middle;
+  width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#adminWrap .areaRegister {
+  display: flex;
+}
+#adminWrap .areaRegister > div {
+  flex: 1 1 auto;
+  padding: 5px 0;
+}
+#adminWrap .areaRegister .inputBox .item {
+  padding: 5px 0;
+}
+#adminWrap .areaRegister .inputBox .item input[type='text'],
+#adminWrap .areaRegister .inputBox .item input[type='password'] {
+  display: inline-block;
+  vertical-align: middle;
+  width: 100%;
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 5px;
+}
+#adminWrap .areaRegister .inputBox .item #fileUploadInput {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 15px;
+}
+#adminWrap .areaRegister .inputBox .item #uploadImage {
+  display: inline-block;
+  vertical-align: middle;
+}
+#adminWrap .areaRegister .inputBox .item #uploadImage img {
+  width: auto;
+  height: 44px;
+}
+#adminWrap .areaRegister .btnRegisterBox {
+  padding-left: 15px;
+  min-width: 100px;
+  max-width: 100px;
+}
+#adminWrap .areaRegister .btnRegisterBox .btnRegister {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* mobile 780 이하 일때 */
