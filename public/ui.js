@@ -18,6 +18,7 @@ var AppScraperUi = (function(window, document, $) {
     this.$reviewsWrapDivSecond = $('.reviewsWrap > div').eq(1);
     this.timeDelay = 250;
     this.timeFade = 500;
+    this.pageSize = 30;
 
     this.init();
   }
@@ -203,12 +204,10 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     * parser review android
+     * parser review android render
      * @param { Object } data
      */
-    parserReviewAndroid: function(data) {
-      console.log('#parserReviewAndroid data.length', data.slice(0, 100));
-
+    parserReviewAndroidRender: function(data) {
       var reviews = '';
       if (data.length !== 0) {
         for (var i = 0; i < data.length; i++) {
@@ -259,25 +258,14 @@ var AppScraperUi = (function(window, document, $) {
         reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
 
-      this.$reviewsAndroid
-        .hide()
-        .empty()
-        .append(reviews)
-        .delay(this.timeDelay)
-        .fadeIn(this.timeFade);
-      this.$reviewsWrapDivFirst
-        .find('.total')
-        .text(data.length)
-        .end()
-        .find('>div')
-        .scrollTop(0);
+      return reviews;
     },
 
     /**
-     * parser review ios
+     * parser review ios render
      * @param { Object } data
      */
-    parserReviewIos: function(data) {
+    parserReviewIosRender: function(data) {
       var reviews = '';
       if (data.length !== 0) {
         for (var i = 0; i < data.length; i++) {
@@ -317,13 +305,77 @@ var AppScraperUi = (function(window, document, $) {
         reviews += '<li class="not-exists">조회된 리뷰가 없습니다.</li>';
       }
 
-      this.$reviewsIos
+      return reviews;
+    },
+
+    /**
+     *
+     * @param { Object } data
+     * @param { String } os
+     */
+    parserReview: function(data, os) {
+      var _this = this;
+      var count = 0;
+      var isMobile = this.$window.width() <= 780 ? true : false;
+      var $scrollWrap = os === 'android' ? _this.$reviewsBox.eq(0) : _this.$reviewsBox.eq(1);
+      var $targetReviewList = os === 'android' ? this.$reviewsAndroid : this.$reviewsIos;
+      var $targetReviewTop =
+        os === 'android' ? this.$reviewsWrapDivFirst : this.$reviewsWrapDivSecond;
+      var firstData = isMobile ? data : data.slice(0, _this.pageSize);
+      var firstReviews =
+        os === 'android'
+          ? this.parserReviewAndroidRender(firstData)
+          : this.parserReviewIosRender(firstData);
+      var scrollTimer;
+      var lastScrollFireTime = 0;
+      var update = function($this) {
+        if (
+          $this.scrollTop() + parseInt($scrollWrap.height() / 3) >=
+          $targetReviewList.height() - $scrollWrap.height()
+        ) {
+          count++;
+          var applyData = data.slice(_this.pageSize * count, _this.pageSize * (count + 1));
+          if (applyData.length !== 0) {
+            NProgress.start();
+            var reviews =
+              os === 'android'
+                ? _this.parserReviewAndroidRender(applyData)
+                : _this.parserReviewIosRender(applyData);
+            $targetReviewList.append(reviews);
+            NProgress.done();
+          } else {
+            $scrollWrap.unbind('scroll.load');
+          }
+        }
+      };
+
+      $scrollWrap.unbind('scroll.load');
+      if (data.length > 30 || !isMobile) {
+        $scrollWrap.bind('scroll.load', function() {
+          var minScrollTime = 500;
+          var now = new Date().getTime();
+          var $this = $(this);
+          if (!scrollTimer) {
+            if (now - lastScrollFireTime > 3 * minScrollTime) {
+              update($this);
+              lastScrollFireTime = now;
+            }
+            scrollTimer = setTimeout(function() {
+              scrollTimer = null;
+              lastScrollFireTime = new Date().getTime();
+              update($this);
+            }, minScrollTime);
+          }
+        });
+      }
+
+      $targetReviewList
         .hide()
         .empty()
-        .append(reviews)
+        .append(firstReviews)
         .delay(this.timeDelay)
         .fadeIn(this.timeFade);
-      this.$reviewsWrapDivSecond
+      $targetReviewTop
         .find('.total')
         .text(data.length)
         .end()
@@ -354,8 +406,10 @@ var AppScraperUi = (function(window, document, $) {
           if (data.details !== '') {
             _this.parserDetails(data.details);
           }
-          _this.parserReviewAndroid(data.review_android);
-          _this.parserReviewIos(data.review_ios);
+
+          _this.parserReview(data.review_android, 'android');
+          _this.parserReview(data.review_ios, 'ios');
+
           NProgress.done();
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -370,6 +424,7 @@ var AppScraperUi = (function(window, document, $) {
 
 function adminSet() {
   var base64 = null;
+
   $('#fileUploadInput').bind('change', function(e) {
     var file = e.target.files[0];
     if (file) {
@@ -394,12 +449,6 @@ function adminSet() {
     var name = $('input[name=name]').val();
     var googlePlayAppId = $('input[name=googlePlayAppId]').val();
     var appStoreId = $('input[name=appStoreId]').val();
-
-    if (name == '' || googlePlayAppId == '' || appStoreId == '' || base64 == null) {
-      alert('입력필드가 비어있습니다');
-      return;
-    }
-
     var reqpuestData = {
       name: name,
       googlePlayAppId: googlePlayAppId,
@@ -407,12 +456,18 @@ function adminSet() {
       image: base64
     };
 
+    if (name == '' || googlePlayAppId == '' || appStoreId == '' || base64 == null) {
+      alert('입력필드가 비어있습니다');
+      return;
+    }
+
     $.ajax({
       method: 'POST',
       url: '/api/sites',
       dataType: 'json',
       data: reqpuestData,
       success: function(data, textStatus, jqXHR) {
+        console.log(data);
         alert('스크랩할 사이트가 추가됬습니다.');
         location.reload(true);
       },
@@ -427,16 +482,15 @@ function loginSet() {
   $('#loginBtn').bind('click', function() {
     var username = $('input[name=username]').val();
     var password = $('input[name=password]').val();
+    var reqpuestData = {
+      username: username,
+      password: password
+    };
 
     if (username == '' || password == '') {
       alert('입력필드가 비어있습니다');
       return;
     }
-
-    var reqpuestData = {
-      username: username,
-      password: password
-    };
 
     $.ajax({
       method: 'POST',

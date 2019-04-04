@@ -542,6 +542,9 @@ button.btnTop {
   margin-top: 0;
 }
 
+#adminWrap .areaList li a > span {
+  display: block;
+}
 #adminWrap .areaList .top {
   padding-bottom: 5px;
 }
@@ -555,19 +558,20 @@ button.btnTop {
   color: #999;
 }
 
-#adminWrap .areaList .middle div {
+#adminWrap .areaList .middle .line {
+  display: block;
   color: #c6f079;
 }
-#adminWrap .areaList .middle div .inner {
+#adminWrap .areaList .middle .line .inner {
   padding-left: 30px;
 }
-#adminWrap .areaList .middle div .point {
+#adminWrap .areaList .middle .line .point {
   color: #e3914e;
 }
-#adminWrap .areaList .middle div .int {
+#adminWrap .areaList .middle .line .int {
   color: #e3775c;
 }
-#adminWrap .areaList .middle div .ellipsisTxt {
+#adminWrap .areaList .middle .line .ellipsisTxt {
   display: inline-block;
   vertical-align: middle;
   width: 60%;

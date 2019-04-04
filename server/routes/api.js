@@ -8,6 +8,7 @@ const localhost = 'http://127.0.0.1:889';
 const mongoose = require('mongoose');
 const { createDetailModel, createReviewModel } = require('../models/lib');
 const scheduler = require('../../schedule/scrap');
+const user = require('../../user');
 const moment = require('moment');
 moment.locale('ko');
 
@@ -445,9 +446,11 @@ route.post('/sites', async (req, res) => {
   site.save(async err => {
     if (err) throw err;
 
-    // db 저장후에 모델 생성 및 스크랩 시작
-    // await createDetailModel(name);
-    // await createReviewModel(name);
+    // db 저장후에 스키마 모델 생성
+    await createDetailModel(name);
+    await createReviewModel(name);
+
+    // 스크랩 시작
     // await scheduler({
     //   name,
     //   googlePlayAppId,
@@ -499,7 +502,7 @@ route.post('/login', async (req, res) => {
   }
 
   // admin 계정이 맞는지 확인
-  if (username !== 'admin' && password !== 'hmall2143') {
+  if (username !== user.username && password !== user.password) {
     return res.status(401).json({ error: 'worng username and password' });
   }
 

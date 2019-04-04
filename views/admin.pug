@@ -24,26 +24,27 @@ block contents
     ul(class='areaList')
       -for (var i=0, len = sites.length; i < len; i++)
         li
-          div(class='top')
-            span(class='num') /* #{i + 1} */
-            //span(class='btnArea')
-              button(class='btnModify') modify
-              if (sites[i].name == 'hmall' || sites[i].name == 'thehyundai')
-              else 
-                button(class='btnDelete') delete
-          div(class='middle')
-            div
-              span(class='point') {
-            div
-              span(class='inner') "name" #[span(class='point') :] "#{sites[i].name}"
-            div
-              span(class='inner') "googlePlayAppId" #[span(class='point') :] "#{sites[i].googlePlayAppId}"
-            div
-              span(class='inner') "appStoreId" #[span(class='point') :] #[span(class='int') #{sites[i].appStoreId}]
-            div
-              span(class='inner') "image" #[span(class='point') :] #[span(class='ellipsisTxt') #{sites[i].image}]
-            div
-              span(class='point') }
+          a(href='/'+sites[i].name title=sites[i].name+' 리뷰 보러가기')
+            span(class='top')
+              span(class='num') /* #{i + 1} */
+              //span(class='btnArea')
+                button(class='btnModify') modify
+                if (sites[i].name == 'hmall' || sites[i].name == 'thehyundai')
+                else 
+                  button(class='btnDelete') delete
+            span(class='middle')
+              span(class='line')
+                span(class='point') {
+              span(class='line')
+                span(class='inner') "name" #[span(class='point') :] "#{sites[i].name}"
+              span(class='line')
+                span(class='inner') "googlePlayAppId" #[span(class='point') :] "#{sites[i].googlePlayAppId}"
+              span(class='line')
+                span(class='inner') "appStoreId" #[span(class='point') :] #[span(class='int') #{sites[i].appStoreId}]
+              span(class='line')
+                span(class='inner') "image" #[span(class='point') :] #[span(class='ellipsisTxt') #{sites[i].image}]
+              span(class='line')
+                span(class='point') }
 
 block script
   script.

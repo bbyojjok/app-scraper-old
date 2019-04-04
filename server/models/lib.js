@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 function createDetailModel(name) {
-  try {
-    console.log(mongoose.model(`Detail-${name}`));
-  } catch (e) {}
-
   return mongoose.model(
     `Detail-${name}`,
     new Schema(

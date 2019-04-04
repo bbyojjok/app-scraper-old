@@ -29,7 +29,8 @@ app.use(
   session({
     secret: '@$#^#!(!@JE!@(@!#',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 10 }
   })
 );
 app.use(helmet());
