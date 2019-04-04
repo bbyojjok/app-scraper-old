@@ -8,7 +8,7 @@ const localhost = 'http://127.0.0.1:889';
 const mongoose = require('mongoose');
 const { createDetailModel, createReviewModel } = require('../models/lib');
 const scheduler = require('../../schedule/scrap');
-const user = require('../../user');
+const account = require('../../account');
 const moment = require('moment');
 moment.locale('ko');
 
@@ -502,7 +502,7 @@ route.post('/login', async (req, res) => {
   }
 
   // admin 계정이 맞는지 확인
-  if (username !== user.username && password !== user.password) {
+  if (username !== account.username && password !== account.password) {
     return res.status(401).json({ error: 'worng username and password' });
   }
 
