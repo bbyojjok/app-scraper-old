@@ -446,6 +446,8 @@ route.post('/sites', async (req, res) => {
   site.save(async err => {
     if (err) throw err;
 
+    console.log(`[SEVER] site: ${name} created!!`);
+
     // db 저장후에 스키마 모델 생성
     await createDetailModel(name);
     await createReviewModel(name);

@@ -8,13 +8,16 @@ route.get('/', async (req, res) => {
   }
 
   const sites = await getApi('http://127.0.0.1:889/api/sites');
-  const list = sites.reduce((acc, data) => {
+  let list = sites.reduce((acc, data) => {
     acc.push({
       name: data.name,
       image: data.image
     });
     return acc;
   }, []);
+  if (list.length === 0) {
+    list = false;
+  }
   res.render('index', { pathRoot: true, list, logingInfo });
 });
 

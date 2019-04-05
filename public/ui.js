@@ -467,7 +467,7 @@ function adminSet() {
       dataType: 'json',
       data: reqpuestData,
       success: function(data, textStatus, jqXHR) {
-        console.log(data);
+        //console.log(data);
         alert('스크랩할 사이트가 추가됬습니다.');
         location.reload(true);
       },
