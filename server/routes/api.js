@@ -504,8 +504,13 @@ route.post('/login', async (req, res) => {
   }
 
   // admin 계정이 맞는지 확인
-  if (username !== account.username && password !== account.password) {
-    return res.status(401).json({ error: 'worng username and password' });
+  if (username !== account.username) {
+    return res.status(401).json({ error: 'worng username' });
+  }
+
+  // 패스워드 맞는지 확인
+  if (password !== account.password) {
+    return res.status(401).json({ error: 'worng password' });
   }
 
   let session = req.session;
