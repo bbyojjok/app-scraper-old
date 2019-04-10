@@ -37,7 +37,16 @@ route.get('/:site', async (req, res) => {
         return res.redirect('/login');
       }
     case 'login':
-      return res.render('login', { logingInfo });
+      if (typeof logingInfo === 'object') {
+        return res.redirect('/');
+      } else {
+        return res.render('login', { logingInfo });
+      }
+    case 'logout':
+      return req.session.destroy(err => {
+        if (err) throw err;
+        return res.redirect('/');
+      });
     case undefined:
       return res.redirect('/');
     default:

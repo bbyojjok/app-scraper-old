@@ -2,9 +2,10 @@ div(id='header')
   h1
     a(href='/' title='메인페이지로 이동') AppScraper
   if !pathRoot
-    a(class='btn btnBack' href='/') 처음으로 가기
+    a(class='btn btnBack' href='/' title='처음으로 가기') 처음으로 가기
   
   if logingInfo
-    a(class='btn btnAdmin' href='/admin') admin 페이지로 가기
+    a(class='btn btnAdmin' href='/admin' title='admin 페이지로 가기') admin 페이지로 가기
+    a(class='btn btnLogout' href='/logout' title='logout 하기') logout 하기
   else
-    a(class='btn btnLogin' href='/login') login 페이지로 가기
+    a(class='btn btnLogin' href='/login' title='login 페이지로 가기') login 페이지로 가기

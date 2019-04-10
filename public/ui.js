@@ -510,7 +510,7 @@ function loginSet() {
     });
   });
 
-  $('input[name=password]').bind('keydown', function(e) {
+  $('input[name=password], input[name=username]').bind('keydown', function(e) {
     if (e.keyCode === 13) {
       $('#loginBtn').trigger('click');
     }

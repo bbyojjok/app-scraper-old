@@ -166,14 +166,18 @@ legend,
   background: url('/images/icon-back.png') no-repeat 0 0;
   background-size: 32px auto;
 }
-
 #header .btnAdmin {
   left: auto;
-  right: 10px;
+  right: 55px;
   background: url('/images/icon-admin.png') no-repeat 0 0;
   background-size: 32px auto;
 }
-
+#header .btnLogout {
+  left: auto;
+  right: 10px;
+  background: url('/images/icon-logout.png') no-repeat 0 0;
+  background-size: 32px auto;
+}
 #header .btnLogin {
   left: auto;
   right: 10px;
