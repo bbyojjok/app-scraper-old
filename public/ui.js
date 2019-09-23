@@ -214,7 +214,7 @@ var AppScraperUi = (function(window, document, $) {
           var review = '';
           review += '<div class="_review">';
           // 제목
-          if (data[i].review.title != '') {
+          if (data[i].review.title !== '' && data[i].review.title !== null) {
             review += '<div class="_subject">' + data[i].review.title + '</div>';
           }
 
@@ -227,7 +227,7 @@ var AppScraperUi = (function(window, document, $) {
           review += '<li class="_user">';
           review += '<img src="' + data[i].review.userImage + '" alt="">';
 
-          if (data[i].review.userName != '') {
+          if (data[i].review.userName !== '') {
             review += '<span>' + data[i].review.userName + '</span>';
           }
           review += '</li>';
@@ -242,7 +242,7 @@ var AppScraperUi = (function(window, document, $) {
           review += '</div>';
 
           // 홈쇼핑 답변
-          if (data[i].review.replyDate != null) {
+          if (data[i].review.replyDate !== null) {
             review += '<div class="_comment">';
             review += '<div class="_icon">';
             review += '<img src="/images/icon-reply-user.png" alt="reply-user">';
@@ -272,7 +272,7 @@ var AppScraperUi = (function(window, document, $) {
           var review = '';
           review += '<div class="_review">';
           // 제목
-          if (data[i].review.title != '') {
+          if (data[i].review.title !== '') {
             review += '<div class="_subject">' + data[i].review.title + '</div>';
           }
 
@@ -285,7 +285,7 @@ var AppScraperUi = (function(window, document, $) {
           review += '<li class="_user">';
           review += '<img src="/images/icon-default-user.jpg" alt="default-user">';
 
-          if (data[i].review.author != '') {
+          if (data[i].review.author !== '') {
             review += '<span>' + data[i].review.author + '</span>';
           }
           review += '</li>';

@@ -96,6 +96,12 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
         .tz('Asia/Seoul')
         .format('YYYY. MM. DD');
     }
+
+    if (dateFormatChange.review.replyDate !== null) {
+      dateFormatChange.review.replyDate = moment(new Date(dateFormatChange.review.replyDate))
+        .tz('Asia/Seoul')
+        .format('YYYY. MM. DD');
+    }
     acc.push(dateFormatChange);
     return acc;
   }, []);

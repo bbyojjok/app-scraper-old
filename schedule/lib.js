@@ -147,7 +147,7 @@ function deepCompare() {
  */
 function undefinedToNull(obj) {
   return Object.keys(obj).reduce((newObj, k) => {
-    if (typeof obj[k] === 'object') {
+    if (typeof obj[k] === 'object' && obj[k] instanceof Object) {
       Object.assign(newObj, { [k]: undefinedToNull(obj[k]) });
     } else {
       Object.assign(newObj, { [k]: obj[k] === undefined ? null : obj[k] });
@@ -159,11 +159,25 @@ function undefinedToNull(obj) {
 /**
  * object key remove
  * @param { Object } obj
- * @param { String } prop
+ * @param { Array } prop
  */
 function objectKeyRemove(obj, prop) {
   return Object.keys(obj).reduce((newObj, key) => {
-    if (key !== prop) {
+    if (!prop.includes(key)) {
+      newObj[key] = obj[key];
+    }
+    return newObj;
+  }, {});
+}
+
+/**
+ * object key add
+ * @param { Object } obj
+ * @param { Array } prop
+ */
+function objectKeyAdd(obj, prop) {
+  return Object.keys(obj).reduce((newObj, key) => {
+    if (prop.includes(key)) {
       newObj[key] = obj[key];
     }
     return newObj;
@@ -196,5 +210,6 @@ module.exports = {
   deepCompare,
   undefinedToNull,
   objectKeyRemove,
+  objectKeyAdd,
   getCronRule
 };

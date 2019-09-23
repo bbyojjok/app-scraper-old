@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const cors = require('cors');
-const pug = require('pug');
 const route = require('./routes');
 const scheduler = require('../schedule/scrap');
 const port = 889;
@@ -19,7 +18,10 @@ connection.once('open', () => {
   console.log('[DB] Connected to mongodb server');
 });
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://127.0.0.1:27017/app-scraper', { useNewUrlParser: true });
+mongoose.connect('mongodb://127.0.0.1:27017/app-scraper', {
+  useNewUrlParser: true,
+  useFindAndModify: false
+});
 
 app.locals.pretty = true;
 app.set('views', path.join(__dirname, '../', 'views'));
