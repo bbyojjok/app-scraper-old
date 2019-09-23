@@ -18,9 +18,6 @@ const moment = require('moment');
 moment.locale('ko');
 let scrapJob;
 
-const sites = require('./sites');
-//let { Detail, Review } = require('../server/models');
-
 function scrapingDetailGooglePlay(scrapData) {
   return new Promise((resolve, reject) => {
     googlePlay
@@ -69,7 +66,7 @@ async function getReviewGooglePlay(idx, reject, scrapData) {
       num: idx
     })
     .then(res => {
-      console.log(`[SCRAPING] #${scrapData.site.name} reviews googlePlay, page: ${idx}`);
+      console.log(`[SCRAPING] #${scrapData.site.name} reviews googlePlay, num: ${idx}`);
       return res;
     })
     .catch(err => {
@@ -85,6 +82,8 @@ function scrapingReviewGooglePlay(scrapData) {
     // for (let i = 0; i < scrapData.site.googlePlayPage; i++) {
     //   reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject, scrapData));
     // }
+
+    // 가져올수 있는 갯수 num: 5000 (default 100)
     reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(5000, reject, scrapData));
 
     const androidReview = await reviewsArr.reduce(async (acc, data, idx) => {
@@ -116,26 +115,17 @@ function scrapingReviewGooglePlay(scrapData) {
         ]);
 
         if (!(await deepCompare(before, await undefinedToNull(after)))) {
-          const setOptions =
-            data.date === 'Invalid Date'
-              ? {
-                  review: await undefinedToNull(data),
-                  updated: await moment()
-                    .tz('Asia/Seoul')
-                    .format()
-                }
-              : {
-                  review: await undefinedToNull(data),
-                  //date: await strToDate(data.date),
-                  date: data.date,
-                  updated: await moment()
-                    .tz('Asia/Seoul')
-                    .format()
-                };
           const updateResult = await scrapData.site.Review.findOneAndUpdate(
             { 'review.id': data.id },
             {
-              $set: setOptions
+              $set: {
+                review: await undefinedToNull(data),
+                //date: await strToDate(data.date),
+                date: data.date,
+                updated: await moment()
+                  .tz('Asia/Seoul')
+                  .format()
+              }
             },
             { new: true },
             err => {
@@ -148,11 +138,6 @@ function scrapingReviewGooglePlay(scrapData) {
           );
         }
       } else {
-        // console.log(`
-        //   ### 신규 리뷰
-        //   ${data.date}
-        // `);
-
         if (data.date !== 'Invalid Date') {
           await accumulator.push({
             name: scrapData.site.name,
@@ -427,42 +412,33 @@ async function sitesScraping(sites) {
   }
 }
 
+function sitesScrapingStart() {
+  axios
+    .get('http://127.0.0.1:889/api/sites')
+    .then(res => {
+      const sites = res.data.reduce((acc, data, idx) => {
+        data.Detail = mongoose.model(`Detail-${data.name}`);
+        data.Review = mongoose.model(`Review-${data.name}`);
+        acc.push(data);
+        return acc;
+      }, []);
+      sitesScraping(sites);
+    })
+    .catch(err => {
+      console.error(err);
+    });
+}
+
 function scheduler(site) {
   // 테스트
   if (typeof site == 'object') {
     scraping(site);
   } else {
-    axios
-      .get('http://127.0.0.1:889/api/sites')
-      .then(res => {
-        const sites = res.data.reduce((acc, data, idx) => {
-          data.Detail = mongoose.model(`Detail-${data.name}`);
-          data.Review = mongoose.model(`Review-${data.name}`);
-          acc.push(data);
-          return acc;
-        }, []);
-        sitesScraping(sites);
-      })
-      .catch(err => {
-        console.error(err);
-      });
+    sitesScrapingStart();
 
     // 스케쥴 등록
     scrapJob = schedule.scheduleJob(getCronRule(), () => {
-      axios
-        .get('http://127.0.0.1:889/api/sites')
-        .then(res => {
-          const sites = res.data.reduce((acc, data, idx) => {
-            data.Detail = mongoose.model(`Detail-${data.name}`);
-            data.Review = mongoose.model(`Review-${data.name}`);
-            acc.push(data);
-            return acc;
-          }, []);
-          sitesScraping(sites);
-        })
-        .catch(err => {
-          console.error(err);
-        });
+      sitesScrapingStart();
 
       scrapJob.cancel();
       // 7시간 이후 다시 스케쥴 등록
