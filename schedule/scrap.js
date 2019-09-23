@@ -83,8 +83,8 @@ function scrapingReviewGooglePlay(scrapData) {
     //   reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject, scrapData));
     // }
 
-    // 가져올수 있는 갯수 num: 5000 (default 100)
-    reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(5000, reject, scrapData));
+    // 가져올수 있는 갯수 num: 1000 (default 100)
+    reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(1000, reject, scrapData));
 
     const androidReview = await reviewsArr.reduce(async (acc, data, idx) => {
       let accumulator = await acc.then();
@@ -434,7 +434,7 @@ function scheduler(site) {
   if (typeof site == 'object') {
     scraping(site);
   } else {
-    sitesScrapingStart();
+    //sitesScrapingStart();
 
     // 스케쥴 등록
     scrapJob = schedule.scheduleJob(getCronRule(), () => {
