@@ -96,5 +96,19 @@ module.exports = [
     googlePlayPage: 112,
     appStoreId: 449141904,
     appStorePage: 10
+  },
+  {
+    name: 'oliveyoung',
+    googlePlayAppId: 'com.oliveyoung',
+    googlePlayPage: 112,
+    appStoreId: 873779010,
+    appStorePage: 10
+  },
+  {
+    name: 'hnsmall',
+    googlePlayAppId: 'com.hnsmall',
+    googlePlayPage: 112,
+    appStoreId: 687619460,
+    appStorePage: 10
   }
 ];

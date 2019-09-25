@@ -7,35 +7,31 @@ moment.locale('ko');
  * @param { Integer } max
  * @param { Integer } num
  */
-function getRandom(min, max, num) {
-  let randomResult = [];
-  let randomList = [];
+const getRandom = (min, max, num = 1) => {
+  const randomResult = [];
+  const randomList = [];
   for (let i = min; i <= max; i++) {
     randomList.push(i);
   }
-  for (let i = 0; i < (num || 1); i++) {
+  for (let i = 0; i < num; i++) {
     let randomNumber = Math.floor(Math.random() * randomList.length);
     randomResult.push(randomList[randomNumber]);
     randomList.splice(randomNumber, 1);
   }
   return randomResult.length === 1 ? randomResult[0] : randomResult;
-}
+};
 
 /**
  * string to date
  * @param { String } str
  */
-function strToDate(str) {
+const strToDate = str => {
   const result = str
     .split(' ')
-    .map((data, i) => {
-      return data.slice(0, -1);
-    })
+    .map(data => data.slice(0, -1))
     .join('-');
-  return moment(result, 'YYYY-MM-DD')
-    .tz('Asia/Seoul')
-    .format();
-}
+  return moment(result, 'YYYY-MM-DD').format();
+};
 
 /**
  * object deep compare
@@ -145,7 +141,7 @@ function deepCompare() {
  * object is undefined to null
  * @param { Object } obj
  */
-function undefinedToNull(obj) {
+const undefinedToNull = obj => {
   return Object.keys(obj).reduce((newObj, k) => {
     if (typeof obj[k] === 'object' && obj[k] instanceof Object) {
       Object.assign(newObj, { [k]: undefinedToNull(obj[k]) });
@@ -154,40 +150,40 @@ function undefinedToNull(obj) {
     }
     return newObj;
   }, {});
-}
+};
 
 /**
  * object key remove
  * @param { Object } obj
  * @param { Array } prop
  */
-function objectKeyRemove(obj, prop) {
+const objectKeyRemove = (obj, prop) => {
   return Object.keys(obj).reduce((newObj, key) => {
     if (!prop.includes(key)) {
       newObj[key] = obj[key];
     }
     return newObj;
   }, {});
-}
+};
 
 /**
  * object key add
  * @param { Object } obj
  * @param { Array } prop
  */
-function objectKeyAdd(obj, prop) {
+const objectKeyAdd = (obj, prop) => {
   return Object.keys(obj).reduce((newObj, key) => {
     if (prop.includes(key)) {
       newObj[key] = obj[key];
     }
     return newObj;
   }, {});
-}
+};
 
 /**
  * get cron rule
  */
-function getCronRule() {
+const getCronRule = () => {
   /*
     #Cron-style Scheduling
       '* * * * * *'
@@ -199,10 +195,10 @@ function getCronRule() {
       day of week (0 - 7) (0 or 7 is Sun)
   */
   //실제 적용할 크론 룰 (매일 00시 ~ 05시 사이 랜덤으로 분 초 적용)
-  let rule = [getRandom(0, 59), getRandom(0, 59), getRandom(0, 4), '*', '*', '*'].join(' ');
+  const rule = [getRandom(0, 59), getRandom(0, 59), getRandom(0, 4), '*', '*', '*'].join(' ');
   console.log('[CRON] rule:', rule);
   return rule;
-}
+};
 
 module.exports = {
   getRandom,

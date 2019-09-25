@@ -1,10 +1,10 @@
 const express = require('express');
-const app = express();
 const session = require('express-session');
 const path = require('path');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const compression = require('compression');
+const dotenv = require('dotenv');
 const morgan = require('morgan');
 const cors = require('cors');
 const route = require('./routes');
@@ -13,10 +13,11 @@ const port = 889;
 const mongoose = require('mongoose');
 const { connection } = mongoose;
 
+dotenv.config();
+const app = express();
+
 connection.on('error', console.error);
-connection.once('open', () => {
-  console.log('[DB] Connected to mongodb server');
-});
+connection.once('open', () => console.log('[DB] Connected to mongodb server'));
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://127.0.0.1:27017/app-scraper', {
   useNewUrlParser: true,
@@ -29,7 +30,7 @@ app.set('view engine', 'pug');
 
 app.use(
   session({
-    secret: '@$#^#!(!@JE!@(@!#',
+    secret: process.env.COOKIE_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 1000 * 60 * 10 }
@@ -47,7 +48,11 @@ app.use('/', route);
 app.listen(port, async () => {
   console.log(`[SERVER] Express is listening on port ${port}`);
 
-  await require('./models/detail');
-  await require('./models/review');
-  await scheduler();
+  try {
+    await require('./models/detail');
+    await require('./models/review');
+    await scheduler();
+  } catch (err) {
+    console.log('[SERVER] listen ERROR:', err);
+  }
 });

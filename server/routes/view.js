@@ -2,42 +2,36 @@ const route = require('express').Router();
 const { getApi } = require('../lib');
 
 route.get('/', async (req, res) => {
-  let { logingInfo } = req.session;
-  if (logingInfo === undefined) {
-    logingInfo = false;
-  }
+  const logingInfo = req.session.logingInfo || false;
+  const sites = await getApi('/sites');
+  const list =
+    sites.length === 0
+      ? false
+      : sites.reduce((acc, data) => {
+          acc.push({
+            name: data.name,
+            image: data.image
+          });
+          return acc;
+        }, []);
 
-  const sites = await getApi('http://127.0.0.1:889/api/sites');
-  let list = sites.reduce((acc, data) => {
-    acc.push({
-      name: data.name,
-      image: data.image
-    });
-    return acc;
-  }, []);
-  if (list.length === 0) {
-    list = false;
-  }
-  res.render('index', { pathRoot: true, list, logingInfo });
+  return res.render('index', { pathRoot: true, list, logingInfo });
 });
 
 route.get('/:site', async (req, res) => {
+  const logingInfo = req.session.logingInfo || false;
   const site = req.params.site;
-  let { logingInfo } = req.session;
-  if (logingInfo === undefined) {
-    logingInfo = false;
-  }
 
   switch (site) {
     case 'admin':
-      if (typeof logingInfo === 'object') {
-        let sites = await getApi('http://127.0.0.1:889/api/sites');
+      if (logingInfo) {
+        const sites = await getApi('/sites');
         return res.render('admin', { sites, logingInfo });
       } else {
         return res.redirect('/login');
       }
     case 'login':
-      if (typeof logingInfo === 'object') {
+      if (logingInfo) {
         return res.redirect('/');
       } else {
         return res.render('login', { logingInfo });
@@ -50,11 +44,9 @@ route.get('/:site', async (req, res) => {
     case undefined:
       return res.redirect('/');
     default:
-      let list = await getApi('http://127.0.0.1:889/api/sites');
-      let target = list.filter((data, i) => {
-        return data.name === site;
-      });
-      let image = target[0].image;
+      const list = await getApi('/sites');
+      const target = list.filter(data => data.name === site);
+      const image = target[0].image;
       return res.render('review', { site, image, logingInfo });
   }
 });

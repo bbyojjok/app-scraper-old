@@ -1,16 +1,12 @@
-const { createReviewModel } = require('./lib');
 const axios = require('axios');
+const { createReviewModel } = require('./lib');
 
 module.exports = (async () => {
   const sites = await axios
-    .get('http://127.0.0.1:889/api/sites')
-    .then(res => {
-      return res.data;
-    })
-    .catch(err => {
-      return false;
-    });
-  return sites.reduce((acc, data, idx) => {
+    .get('/sites')
+    .then(res => res.data)
+    .catch(err => false);
+  return sites.reduce((acc, data) => {
     acc[data.name] = createReviewModel(data.name);
     return acc;
   }, {});

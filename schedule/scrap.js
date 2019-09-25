@@ -1,10 +1,10 @@
+const schedule = require('node-schedule');
+const axios = require('axios');
+const mongoose = require('mongoose');
 const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
-const appStoreReviews = require('../lib/app-store-reviews');
-const appStoreRatingsAverages = require('../lib/app-store-ratings-averages');
-const schedule = require('node-schedule');
-const mongoose = require('mongoose');
-const axios = require('axios');
+const appStoreReviews = require('../appStoreLibrary/app-store-reviews');
+const appStoreRatingsAverages = require('../appStoreLibrary/app-store-ratings-averages');
 const {
   getRandom,
   strToDate,
@@ -18,82 +18,79 @@ const moment = require('moment');
 moment.locale('ko');
 let scrapJob;
 
-function scrapingDetailGooglePlay(scrapData) {
-  return new Promise((resolve, reject) => {
-    googlePlay
-      .app({ appId: scrapData.site.googlePlayAppId, lang: 'ko', country: 'kr' })
-      .then(res => {
-        console.log(`[SCRAPING] #${scrapData.site.name} detail googlePlay`);
-        scrapData.detail.android = res;
-        resolve(scrapData);
-      })
-      .catch(err => {
-        scrapData.detail.android = false;
-        reject({ err, scrapData });
-      });
-  });
-}
+const scrapingDetailGooglePlay = async scrapData => {
+  try {
+    const result = await googlePlay.app({
+      appId: scrapData.site.googlePlayAppId,
+      lang: 'ko',
+      country: 'kr'
+    });
+    console.log(`[SCRAPING] #${scrapData.site.name} detail googlePlay`);
+    return result;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
 
-function scrapingDetailAppStore(scrapData) {
-  return new Promise((resolve, reject) => {
-    appStore
-      .app({ id: scrapData.site.appStoreId, country: 'kr' })
-      .then(async res => {
-        console.log(`[SCRAPING] #${scrapData.site.name} detail appStore`);
-        scrapData.detail.ios = res;
-        await appStoreRatingsAverages(scrapData.site.appStoreId)
-          .then(res => {
-            scrapData.detail.ios.ratingsAverages = res;
-            resolve(scrapData);
-          })
-          .catch(err => {
-            reject({ err, scrapData });
-          });
-      })
-      .catch(err => {
-        scrapData.detail.ios = false;
-        reject({ err, scrapData });
-      });
-  });
-}
+const scrapingDetailAppStore = async scrapData => {
+  try {
+    const result = await appStore.app({ id: scrapData.site.appStoreId, country: 'kr' });
+    result.ratingsAverages = await appStoreRatingsAverages(scrapData.site.appStoreId);
+    console.log(`[SCRAPING] #${scrapData.site.name} detail appStore`);
+    return result;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
 
-async function getReviewGooglePlay(idx, reject, scrapData) {
-  return await googlePlay
-    .reviews({
+const scrapingDetail = async scrapData => {
+  try {
+    scrapData.detail.android = await scrapingDetailGooglePlay(scrapData);
+    scrapData.detail.ios = await scrapingDetailAppStore(scrapData);
+    scrapData.detail.created = moment().format();
+
+    // DB save
+    const detail = new scrapData.site.Detail(scrapData.detail);
+    await detail.save(err => {
+      if (err) throw err;
+    });
+    console.log(`[SCRAPING/DB] #${scrapData.site.name} scraping detail data saved`);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const getReviewGooglePlay = async ({ num, scrapData, reject }) => {
+  try {
+    const reviews = await googlePlay.reviews({
       appId: scrapData.site.googlePlayAppId,
       lang: 'ko',
       sort: googlePlay.sort.NEWEST,
-      num: idx
-    })
-    .then(res => {
-      console.log(`[SCRAPING] #${scrapData.site.name} reviews googlePlay, num: ${idx}`);
-      return res;
-    })
-    .catch(err => {
-      scrapData.review.googlePlay.error = false;
-      reject({ err, scrapData });
+      num
     });
-}
+    console.log(`[SCRAPING] #${scrapData.site.name} reviews googlePlay, num: ${num}`);
+    return reviews;
+  } catch (err) {
+    scrapData.review.googlePlay.error = false;
+    //return { err, scrapData };
+    reject({ err, scrapData });
+  }
+};
 
-function scrapingReviewGooglePlay(scrapData) {
+const scrapingReviewGooglePlay = scrapData => {
   return new Promise(async (resolve, reject) => {
-    let reviewsArr = [];
-    // 최대 가져올수 있는 페이지 page: 0 ~ 112
-    // for (let i = 0; i < scrapData.site.googlePlayPage; i++) {
-    //   reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(i, reject, scrapData));
-    // }
-
     // 가져올수 있는 갯수 num: 1000 (default 100)
-    reviewsArr = await reviewsArr.concat(await getReviewGooglePlay(1000, reject, scrapData));
-
+    const reviewsArr = await getReviewGooglePlay({ num: 1000, scrapData, reject });
     const androidReview = await reviewsArr.reduce(async (acc, data, idx) => {
-      let accumulator = await acc.then();
-      let queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
+      const accumulator = await acc.then();
+      const queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
         if (err) throw err;
       });
 
       if (queryResult) {
-        let before = await objectKeyAdd(queryResult.review, [
+        const before = await objectKeyAdd(queryResult.review, [
           'id',
           'userName',
           'date',
@@ -103,7 +100,7 @@ function scrapingReviewGooglePlay(scrapData) {
           'replyDate',
           'replyText'
         ]);
-        let after = await objectKeyAdd(data, [
+        const after = await objectKeyAdd(data, [
           'id',
           'userName',
           'date',
@@ -122,9 +119,7 @@ function scrapingReviewGooglePlay(scrapData) {
                 review: await undefinedToNull(data),
                 //date: await strToDate(data.date),
                 date: data.date,
-                updated: await moment()
-                  .tz('Asia/Seoul')
-                  .format()
+                updated: await moment().format()
               }
             },
             { new: true },
@@ -134,7 +129,7 @@ function scrapingReviewGooglePlay(scrapData) {
           );
           await scrapData.review.googlePlay.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews googlePlay, 중복되어 업데이트된 리뷰 ${idx}`
+            `[SCRAPING/DB] #${scrapData.site.name} reviews googlePlay, 중복되어 업데이트된 리뷰 ${idx}`
           );
         }
       } else {
@@ -145,9 +140,7 @@ function scrapingReviewGooglePlay(scrapData) {
             os: 'android',
             //date: await strToDate(data.date),
             date: data.date,
-            created: await moment()
-              .tz('Asia/Seoul')
-              .format()
+            created: await moment().format()
           });
           await console.log(
             `[SCRAPING] #${scrapData.site.name} reviews googlePlay, 중복되지 않는 신규 리뷰 ${idx}`
@@ -181,9 +174,9 @@ function scrapingReviewGooglePlay(scrapData) {
           scrapData.site.Review.insertMany(androidReview, (err, docs) => {
             if (err) throw err;
             console.log(
-              `[DB] #${scrapData.site.name} scraping android review data saved ${moment().format(
-                'YYYY-MM-DD HH:mm:ss'
-              )}`
+              `[SCRAPING/DB] #${
+                scrapData.site.name
+              } scraping android review data saved ${moment().format('YYYY-MM-DD HH:mm:ss')}`
             );
             resolve(scrapData);
           });
@@ -199,30 +192,34 @@ function scrapingReviewGooglePlay(scrapData) {
         reject({ err, scrapData });
       });
   });
-}
+};
 
-async function getReviewAppStore(idx, reject, scrapData) {
-  return await appStoreReviews({ id: scrapData.site.appStoreId, country: 'kr', page: idx })
-    .then(reviews => {
-      console.log(`[SCRAPING] #${scrapData.site.name} reviews appStore, page: ${idx}`);
-      return reviews;
-    })
-    .catch(err => {
-      scrapData.review.appStore.error = false;
-      reject({ err, scrapData });
+const getReviewAppStore = async ({ page, scrapData, reject }) => {
+  try {
+    const reviews = await appStoreReviews({
+      id: scrapData.site.appStoreId,
+      country: 'kr',
+      page
     });
-}
+    console.log(`[SCRAPING] #${scrapData.site.name} reviews appStore, page: ${page}`);
+    return reviews;
+  } catch (err) {
+    scrapData.review.appStore.error = false;
+    //return { err, scrapData };
+    reject({ err, scrapData });
+  }
+};
 
 function scrapingReviewAppStore(scrapData) {
   return new Promise(async (resolve, reject) => {
+    // 가져올수 있는 리뷰 페이지 page: 1 ~ 10
     let reviewsArr = [];
-    // 최대 가져올수 있는 페이지 page: 1 ~ 10
     for (let i = 1; i <= scrapData.site.appStorePage; i++) {
-      reviewsArr = await reviewsArr.concat(await getReviewAppStore(i, reject, scrapData));
+      reviewsArr = await reviewsArr.concat(await getReviewAppStore({ page: i, scrapData, reject }));
     }
     const iosReview = await reviewsArr.reduce(async (acc, data, idx) => {
-      let accumulator = await acc.then();
-      let queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
+      const accumulator = await acc.then();
+      const queryResult = await scrapData.site.Review.findOne({ 'review.id': data.id }, err => {
         if (err) throw err;
       });
 
@@ -234,9 +231,7 @@ function scrapingReviewAppStore(scrapData) {
               $set: {
                 review: await undefinedToNull(data),
                 date: await strToDate(data.updated),
-                updated: await moment()
-                  .tz('Asia/Seoul')
-                  .format()
+                updated: await moment().format()
               }
             },
             { new: true },
@@ -246,7 +241,7 @@ function scrapingReviewAppStore(scrapData) {
           );
           await scrapData.review.appStore.update.push(updateResult);
           await console.log(
-            `[DB] #${scrapData.site.name} reviews appStore, 중복되어 업데이트된 리뷰 ${idx}`
+            `[SCRAPING/DB] #${scrapData.site.name} reviews appStore, 중복되어 업데이트된 리뷰 ${idx}`
           );
         }
       } else {
@@ -255,9 +250,7 @@ function scrapingReviewAppStore(scrapData) {
           review: await undefinedToNull(data),
           os: 'ios',
           date: await strToDate(data.updated),
-          created: await moment()
-            .tz('Asia/Seoul')
-            .format()
+          created: await moment().format()
         });
         await console.log(
           `[SCRAPING] #${scrapData.site.name} reviews appStore, 중복되지 않는 신규 리뷰 ${idx}`
@@ -284,9 +277,9 @@ function scrapingReviewAppStore(scrapData) {
           scrapData.site.Review.insertMany(iosReview, (err, docs) => {
             if (err) throw err;
             console.log(
-              `[DB] #${scrapData.site.name} scraping ios review data saved ${moment().format(
-                'YYYY-MM-DD HH:mm:ss'
-              )}`
+              `[SCRAPING/DB] #${
+                scrapData.site.name
+              } scraping ios review data saved ${moment().format('YYYY-MM-DD HH:mm:ss')}`
             );
             resolve(scrapData);
           });
@@ -302,28 +295,7 @@ function scrapingReviewAppStore(scrapData) {
   });
 }
 
-async function scraping(site) {
-  const siteBak = site;
-  const scrap = {
-    site,
-    detail: {
-      name: site.name,
-      android: null,
-      ios: null,
-      created: null
-    },
-    review: {
-      googlePlay: {
-        update: [],
-        error: null
-      },
-      appStore: {
-        update: [],
-        error: null
-      }
-    }
-  };
-  let scrapError = 0;
+const scraping = async site => {
   console.log(`
 ================================================================
 
@@ -332,121 +304,82 @@ async function scraping(site) {
 
 ================================================================
   `);
-  await scrapingDetailGooglePlay(scrap)
-    .then(scrapingDetailAppStore)
-    .then(scrapingReviewGooglePlay)
-    .then(scrapingReviewAppStore)
-    .then(async scrapData => {
-      scrapError = 0;
 
-      // DB save
-      scrapData.detail.created = moment()
-        .tz('Asia/Seoul')
-        .format();
-      let detail = new scrapData.site.Detail(scrapData.detail);
-      try {
-        let detailResult = await detail.save(err => {
-          if (err) throw err;
-        });
-        await console.log(`[DB] #${scrapData.site.name} scraping detail data saved`);
-        await console.log(
+  const initialState = {
+    site,
+    detail: { name: site.name, android: null, ios: null, created: null },
+    review: { googlePlay: { update: [], error: null }, appStore: { update: [], error: null } }
+  };
+
+  try {
+    // get detail and saved
+    await scrapingDetail(initialState);
+
+    // get reviews and saved
+    await scrapingReviewGooglePlay(initialState)
+      .then(scrapingReviewAppStore)
+      .then(scrapData => {
+        console.log(scrapData);
+        console.log(
           `[SCRAPING] #${scrapData.site.name} success ${moment().format('YYYY-MM-DD HH:mm:ss')}`
         );
-        return detailResult;
-      } catch (err) {
-        console.error(err);
-      }
-    })
-    .catch(async ({ err, scrapData }) => {
-      scrapJob.cancel();
-      console.log(err);
-      scrapError++;
-      console.log('scrapError:', scrapError);
+      })
+      .catch(({ err, scrapData }) => {
+        console.log(`
+          ${err}
+          ${scrapData}
+        `);
+      });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-      if (scrapError > 3) {
-        console.log(
-          `#${scrapData.site.name} 에러 카운트가 4번 이상이면 에러내용을 데이터에 저장하고 스케쥴 재등록`
-        );
-        // 에러 카운트가 4번 이상이면 에러내용을 데이터에 저장하고 스케쥴 재등록
-        scrapError = 0;
-
-        // DB save
-        scrapData.detail.created = moment()
-          .tz('Asia/Seoul')
-          .format();
-        let detail = new Detail[scrapData.site.name](scrapData.detail);
-        try {
-          let detailResult = await detail.save(err => {
-            if (err) throw err;
-          });
-          await console.log(`[DB] #${scrapData.site.name} scraping detail data saved`);
-          await console.log(
-            `[SCRAPING] #${scrapData.site.name} 에러 4번 발견됨 확인바람 ${moment().format(
-              'YYYY-MM-DD HH:mm:ss'
-            )}`
-          );
-
-          // 7시간 이후 다시 스케쥴 등록
-          await setTimeout(() => {
-            scrapJob.reschedule(getCronRule());
-          }, 1000 * 60 * 60 * 7);
-          return detailResult;
-        } catch (err) {
-          console.error(err);
-        }
-      } else {
-        console.log(`#${scrapData.site.name} 에러 카운트가 3회 까지 재시도`);
-        // 에러 카운트가 3회 까지 재시도
-        // 1~10분(초단위) 사이 재시작
-        setTimeout(() => {
-          scraping(siteBak);
-        }, getRandom(60, 600) * 1000);
-      }
-    });
-}
-
-async function sitesScraping(sites) {
+const sitesScraping = async sites => {
   // 사이트별 스크랩핑
   for (let i = 0, len = sites.length; i < len; i++) {
     await scraping(sites[i]);
   }
-}
+};
 
-function sitesScrapingStart() {
-  axios
-    .get('http://127.0.0.1:889/api/sites')
-    .then(res => {
-      const sites = res.data.reduce((acc, data, idx) => {
-        data.Detail = mongoose.model(`Detail-${data.name}`);
-        data.Review = mongoose.model(`Review-${data.name}`);
-        acc.push(data);
-        return acc;
-      }, []);
-      sitesScraping(sites);
-    })
-    .catch(err => {
-      console.error(err);
-    });
-}
+const sitesScrapingStart = async () => {
+  try {
+    const res = await axios.get('/sites');
+    const sites = res.data.reduce((acc, data) => {
+      data.Detail = mongoose.model(`Detail-${data.name}`);
+      data.Review = mongoose.model(`Review-${data.name}`);
+      acc.push(data);
+      return acc;
+    }, []);
+    sitesScraping(sites);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-function scheduler(site) {
-  // 테스트
-  if (typeof site == 'object') {
+const setState = state => {
+  console.log(state);
+  state.c = 'c';
+  console.log(state);
+};
+
+const scheduler = site => {
+  if (site) {
     scraping(site);
   } else {
-    //sitesScrapingStart();
+    sitesScrapingStart();
 
     // 스케쥴 등록
     scrapJob = schedule.scheduleJob(getCronRule(), () => {
       sitesScrapingStart();
 
-      scrapJob.cancel();
       // 7시간 이후 다시 스케쥴 등록
+      scrapJob.cancel();
       setTimeout(() => {
         scrapJob.reschedule(getCronRule());
       }, 1000 * 60 * 60 * 7);
     });
   }
-}
+};
 
 module.exports = scheduler;

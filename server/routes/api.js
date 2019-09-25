@@ -1,14 +1,14 @@
 const route = require('express').Router();
 const validationAppid = require('../../schedule/validation');
 const Sites = require('../models/sites');
+const { createDetailModel, createReviewModel } = require('../models/lib');
 const xl = require('excel4node');
 const makeDir = require('make-dir');
 const { getApi } = require('../lib');
-const localhost = 'http://127.0.0.1:889';
 const mongoose = require('mongoose');
-const { createDetailModel, createReviewModel } = require('../models/lib');
 const scheduler = require('../../schedule/scrap');
-const account = require('../../account');
+const dotenv = require('dotenv');
+dotenv.config();
 const moment = require('moment');
 moment.locale('ko');
 
@@ -87,22 +87,18 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
   const result = await queryResult.reduce((acc, data) => {
     let dateFormatChange = data;
     if (dateFormatChange.review.updated !== undefined) {
-      dateFormatChange.review.updated = moment(dateFormatChange.date)
-        .tz('Asia/Seoul')
-        .format('YYYY. MM. DD');
+      dateFormatChange.review.updated = moment(dateFormatChange.date).format('YYYY. MM. DD');
     }
     if (dateFormatChange.review.date !== undefined) {
-      dateFormatChange.review.date = moment(dateFormatChange.date)
-        .tz('Asia/Seoul')
-        .format('YYYY. MM. DD');
+      dateFormatChange.review.date = moment(dateFormatChange.date).format('YYYY. MM. DD');
     }
     if (
       dateFormatChange.review.replyDate !== null &&
       dateFormatChange.review.replyDate !== undefined
     ) {
-      dateFormatChange.review.replyDate = moment(new Date(dateFormatChange.review.replyDate))
-        .tz('Asia/Seoul')
-        .format('YYYY. MM. DD');
+      dateFormatChange.review.replyDate = moment(
+        new Date(dateFormatChange.review.replyDate)
+      ).format('YYYY. MM. DD');
     }
 
     acc.push(dateFormatChange);
@@ -120,7 +116,7 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
 route.get('/xlsx/:site/:date?', async (req, res) => {
   const site = req.params.site;
   const date = req.params.date;
-  const url = `${localhost}/api/review/${site}/${date}/12345/`;
+  const url = `/review/${site}/${date}/12345/`;
   const today = moment()
     .startOf('day')
     .format('YYYYMMDD');
@@ -300,17 +296,11 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
     .subtract(1, 'days')
     .format();
   const from =
-    req.params.from !== undefined
-      ? moment(req.params.from, 'YYYYMMDD')
-          .tz('Asia/Seoul')
-          .format()
-      : prevday;
+    req.params.from !== undefined ? moment(req.params.from, 'YYYYMMDD').format() : prevday;
   const to =
     req.params.to !== undefined
       ? req.params.to !== 'today'
-        ? moment(req.params.to, 'YYYYMMDD')
-            .tz('Asia/Seoul')
-            .format()
+        ? moment(req.params.to, 'YYYYMMDD').format()
         : end
       : end;
   const os = req.params.os;
@@ -343,9 +333,9 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
  */
 route.post('/', async (req, res) => {
   const data = req.body;
-  const details = await getApi(localhost + data.details);
-  const review_android = await getApi(localhost + data.review_android);
-  const review_ios = await getApi(localhost + data.review_ios);
+  const details = await getApi(data.details);
+  const review_android = await getApi(data.review_android);
+  const review_ios = await getApi(data.review_ios);
   res.send({ details, review_android, review_ios });
 });
 
@@ -484,8 +474,8 @@ route.put('/sites', async (req, res) => {
   const name = data.name;
   const googlePlayAppId = data.googlePlayAppId;
   const appStoreId = data.appStoreId;
-  console.log('GET /api/modify 사이트 수정', name);
 
+  console.log('GET /api/modify 사이트 수정', name);
   console.log(mongoose.Types.ObjectId.isValid(name));
 
   res.send('modify');
@@ -513,12 +503,12 @@ route.post('/login', async (req, res) => {
   }
 
   // admin 계정이 맞는지 확인
-  if (username !== account.username) {
+  if (username !== process.env.ADMIN_USERNAME) {
     return res.status(401).json({ error: 'worng username' });
   }
 
   // 패스워드 맞는지 확인
-  if (password !== account.password) {
+  if (password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'worng password' });
   }
 

@@ -309,7 +309,7 @@ var AppScraperUi = (function(window, document, $) {
     },
 
     /**
-     *
+     * parser review
      * @param { Object } data
      * @param { String } os
      */
@@ -391,9 +391,9 @@ var AppScraperUi = (function(window, document, $) {
       var _this = this;
       var date = location.hash.slice(1);
       var reqpuestData = {
-        review_android: '/api/review/' + site + date + '/android',
-        review_ios: '/api/review/' + site + date + '/ios',
-        details: '/api/details/' + site
+        review_android: '/review/' + site + date + '/android',
+        review_ios: '/review/' + site + date + '/ios',
+        details: '/details/' + site
       };
 
       NProgress.start();
