@@ -200,6 +200,11 @@ const getCronRule = () => {
   return rule;
 };
 
+/**
+ * current date
+ */
+const currentDate = () => moment().format('YYYY.MM.DD HH:mm:ss');
+
 module.exports = {
   getRandom,
   strToDate,
@@ -207,5 +212,6 @@ module.exports = {
   undefinedToNull,
   objectKeyRemove,
   objectKeyAdd,
-  getCronRule
+  getCronRule,
+  currentDate
 };

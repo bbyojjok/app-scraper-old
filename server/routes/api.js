@@ -445,8 +445,6 @@ route.post('/sites', async (req, res) => {
   site.save(async err => {
     if (err) throw err;
 
-    console.log(`[SERVER] site ${name} created!!`);
-
     // db 저장후에 스키마 모델 생성
     await createDetailModel(name);
     await createReviewModel(name);
@@ -462,6 +460,7 @@ route.post('/sites', async (req, res) => {
     //   Review: mongoose.model(`Review-${name}`)
     // });
 
+    console.log(`[SERVER] site ${name} created!!`);
     return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
   });
 });
