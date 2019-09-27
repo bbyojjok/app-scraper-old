@@ -16,8 +16,6 @@ const {
   getCronRule,
   currentDate
 } = require('./lib');
-
-axios.defaults.baseURL = 'http://127.0.0.1:889/api';
 moment.locale('ko');
 
 let scrapJob;
@@ -268,7 +266,7 @@ const scraping = async site => {
   console.log(`
 ======================================================================================
 
-  [SCRAPING] #${name} START 
+  [SCRAPING/START] #${name}
   ${currentDate()}
 
 ======================================================================================
@@ -286,8 +284,8 @@ const scraping = async site => {
     await scrapingDetail(initialState);
     await scrapingReviewGooglePlay(initialState);
     await scrapingReviewAppStore(initialState);
-
-    console.log(`[SCRAPING] #${name} END ${currentDate()}`);
+    console.log(`[SCRAPING/END] #${name} ${currentDate()}
+    `);
   } catch (err) {
     console.error(err);
   }
@@ -317,17 +315,16 @@ const scheduler = site => {
   if (site) {
     scraping(site);
   } else {
-    sitesScrapingStart();
+    // sitesScrapingStart();
 
     // 스케쥴 등록
     scrapJob = schedule.scheduleJob(getCronRule(), () => {
       sitesScrapingStart();
-
-      // 7시간 이후 다시 스케쥴 등록
+      // 스캐쥴 취소 후, 7시간 이후 다시 스케쥴 등록
       scrapJob.cancel();
       setTimeout(() => scrapJob.reschedule(getCronRule()), 1000 * 60 * 60 * 7);
     });
   }
 };
 
-module.exports = scheduler;
+module.exports = { scheduler, scraping };

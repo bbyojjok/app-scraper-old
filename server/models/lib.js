@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-function createDetailModel(name) {
+const createDetailModel = name => {
   return mongoose.model(
     `Detail-${name}`,
     new Schema(
@@ -14,9 +14,9 @@ function createDetailModel(name) {
       { collection: `detail-${name}` }
     )
   );
-}
+};
 
-function createReviewModel(name) {
+const createReviewModel = name => {
   return mongoose.model(
     `Review-${name}`,
     new Schema(
@@ -31,6 +31,6 @@ function createReviewModel(name) {
       { collection: `review-${name}` }
     )
   );
-}
+};
 
 module.exports = { createDetailModel, createReviewModel };

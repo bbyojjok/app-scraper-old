@@ -7,12 +7,13 @@ const compression = require('compression');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const cors = require('cors');
+const detailModel = require('./models/detail');
+const reviewModel = require('./models/review');
 const route = require('./routes');
-const scheduler = require('../schedule/scrap');
+const { scheduler } = require('../schedule/scrap');
 const port = 889;
 const mongoose = require('mongoose');
 const { connection } = mongoose;
-
 dotenv.config();
 const app = express();
 
@@ -47,11 +48,10 @@ app.use('/', route);
 
 app.listen(port, async () => {
   console.log(`[SERVER] Express is listening on port ${port}`);
-
   try {
-    await require('./models/detail');
-    await require('./models/review');
-    await scheduler();
+    await detailModel();
+    await reviewModel();
+    scheduler();
   } catch (err) {
     console.log('[SERVER] listen ERROR:', err);
   }

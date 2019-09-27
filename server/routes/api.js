@@ -1,12 +1,12 @@
 const route = require('express').Router();
-const validationAppid = require('../../schedule/validation');
+const mongoose = require('mongoose');
+const makeDir = require('make-dir');
+const xl = require('excel4node');
+const { getApi } = require('../lib');
 const Sites = require('../models/sites');
 const { createDetailModel, createReviewModel } = require('../models/lib');
-const xl = require('excel4node');
-const makeDir = require('make-dir');
-const { getApi } = require('../lib');
-const mongoose = require('mongoose');
-const scheduler = require('../../schedule/scrap');
+const validationAppid = require('../../schedule/validation');
+const { scraping } = require('../../schedule/scrap');
 const dotenv = require('dotenv');
 dotenv.config();
 const moment = require('moment');
@@ -18,18 +18,15 @@ moment.locale('ko');
  * example: /details/hmall/android
  */
 route.get('/details/:site/:os?', async (req, res) => {
-  const site = req.params.site;
-  const os = req.params.os;
+  const { site, os } = req.params;
   const Detail = mongoose.model(`Detail-${site}`);
-
   const queryResult = await Detail.findOne({}, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ created: -1 });
-
   if (os) {
-    res.send(queryResult[os]);
+    return res.send(queryResult[os]);
   } else {
-    res.send(queryResult);
+    return res.send(queryResult);
   }
 });
 
@@ -39,10 +36,7 @@ route.get('/details/:site/:os?', async (req, res) => {
  * example: /review/hmall/7/1/android
  */
 route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
-  const site = req.params.site;
-  const date = req.params.date;
-  const score = req.params.score;
-  const os = req.params.os;
+  const { site, date, score, os } = req.params;
   const Review = mongoose.model(`Review-${site}`);
   // 오늘까지
   const today = moment()
@@ -85,27 +79,20 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
   }).sort({ date: -1 });
 
   const result = await queryResult.reduce((acc, data) => {
-    let dateFormatChange = data;
-    if (dateFormatChange.review.updated !== undefined) {
-      dateFormatChange.review.updated = moment(dateFormatChange.date).format('YYYY. MM. DD');
+    if (data.review.updated !== undefined) {
+      data.review.updated = moment(data.date).format('YYYY. MM. DD');
     }
-    if (dateFormatChange.review.date !== undefined) {
-      dateFormatChange.review.date = moment(dateFormatChange.date).format('YYYY. MM. DD');
+    if (data.review.date !== undefined) {
+      data.review.date = moment(data.date).format('YYYY. MM. DD');
     }
-    if (
-      dateFormatChange.review.replyDate !== null &&
-      dateFormatChange.review.replyDate !== undefined
-    ) {
-      dateFormatChange.review.replyDate = moment(
-        new Date(dateFormatChange.review.replyDate)
-      ).format('YYYY. MM. DD');
+    if (data.review.replyDate !== null && data.review.replyDate !== undefined) {
+      data.review.replyDate = moment(new Date(data.review.replyDate)).format('YYYY. MM. DD');
     }
-
-    acc.push(dateFormatChange);
+    acc.push(data);
     return acc;
   }, []);
 
-  res.send(result);
+  return res.send(result);
 });
 
 /**
@@ -114,8 +101,7 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
  * example: /xlsx/hmall/7
  */
 route.get('/xlsx/:site/:date?', async (req, res) => {
-  const site = req.params.site;
-  const date = req.params.date;
+  const { site, date } = req.params;
   const url = `/review/${site}/${date}/12345/`;
   const today = moment()
     .startOf('day')
@@ -129,26 +115,12 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
   const ws1 = wb.addWorksheet(`android - ${date}일 이전`);
   const ws2 = wb.addWorksheet(`ios - ${date}일 이전`);
   const style_head = wb.createStyle({
-    font: {
-      bold: true,
-      color: '#000000',
-      size: 13
-    },
-    alignment: {
-      horizontal: ['center'],
-      vertical: ['center']
-    }
+    font: { bold: true, color: '#000000', size: 13 },
+    alignment: { horizontal: ['center'], vertical: ['center'] }
   });
-  const style_right = wb.createStyle({
-    alignment: {
-      horizontal: ['right']
-    }
-  });
+  const style_right = wb.createStyle({ alignment: { horizontal: ['right'] } });
   const style_center = wb.createStyle({
-    alignment: {
-      horizontal: ['center'],
-      vertical: ['center']
-    }
+    alignment: { horizontal: ['center'], vertical: ['center'] }
   });
 
   // android sheet
@@ -209,25 +181,23 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     .filter();
 
   const data = await getApi(url);
-  const data_anroid = data.filter(val => {
-    return val.os === 'android';
-  });
+  const data_anroid = data.filter(val => val.os === 'android');
   if (data_anroid.length > 0) {
     data_anroid.forEach((data, i) => {
-      let num = i + 2;
-      let review = data.review;
+      const num = i + 2;
+      const { score, date, text, userName } = data.review;
       ws1
         .cell(num, 1)
-        .string(review.score.toString())
+        .string(score.toString())
         .style(style_right);
       ws1
         .cell(num, 2)
-        .string(review.date)
+        .string(date)
         .style(style_right);
-      ws1.cell(num, 3).string(review.text);
+      ws1.cell(num, 3).string(text);
       ws1
         .cell(num, 4)
-        .string(review.userName)
+        .string(userName)
         .style(style_right);
     });
   } else {
@@ -238,26 +208,24 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
       .style(style_center);
   }
 
-  const data_ios = data.filter(val => {
-    return val.os === 'ios';
-  });
+  const data_ios = data.filter(val => val.os === 'ios');
   if (data_ios.length > 0) {
     data_ios.forEach((data, i) => {
-      let num = i + 2;
-      let review = data.review;
+      const num = i + 2;
+      const { rate, updated, title, comment, author } = data.review;
       ws2
         .cell(num, 1)
-        .string(review.rate)
+        .string(rate)
         .style(style_right);
       ws2
         .cell(num, 2)
-        .string(review.updated)
+        .string(updated)
         .style(style_right);
-      ws2.cell(num, 3).string(review.title);
-      ws2.cell(num, 4).string(review.comment);
+      ws2.cell(num, 3).string(title);
+      ws2.cell(num, 4).string(comment);
       ws2
         .cell(num, 5)
-        .string(review.author)
+        .string(author)
         .style(style_right);
     });
   } else {
@@ -284,7 +252,7 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
  * example: /reviews/hmall/20190301/20190313/android
  */
 route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
-  const site = req.params.site;
+  const { site, os } = req.params;
   const Review = mongoose.model(`Review-${site}`);
   const today = moment()
     .startOf('day')
@@ -303,13 +271,7 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
         ? moment(req.params.to, 'YYYYMMDD').format()
         : end
       : end;
-  const os = req.params.os;
-  const options = {
-    date: {
-      $gte: from,
-      $lte: to
-    }
-  };
+  const options = { date: { $gte: from, $lte: to } };
   if (os) {
     options.os = os;
   }
@@ -323,7 +285,7 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
-  res.send(queryResult);
+  return res.send(queryResult);
 });
 
 /**
@@ -332,11 +294,13 @@ route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
  * example: /
  */
 route.post('/', async (req, res) => {
-  const data = req.body;
-  const details = await getApi(data.details);
-  const review_android = await getApi(data.review_android);
-  const review_ios = await getApi(data.review_ios);
-  res.send({ details, review_android, review_ios });
+  const { details, review_android, review_ios } = req.body;
+  const result = {
+    details: await getApi(details),
+    review_android: await getApi(review_android),
+    review_ios: await getApi(review_ios)
+  };
+  return res.send(result);
 });
 
 /**
@@ -346,7 +310,7 @@ route.get('/sites', async (req, res) => {
   const queryResult = await Sites.find({}, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   });
-  res.send(queryResult);
+  return res.send(queryResult);
 });
 
 /**
@@ -359,11 +323,8 @@ route.get('/sites', async (req, res) => {
     }
  */
 route.post('/sites', async (req, res) => {
-  const data = req.body;
-  const name = data.name;
-  const googlePlayAppId = data.googlePlayAppId;
-  const appStoreId = parseInt(data.appStoreId, 10);
-  const image = data.image;
+  const { name, googlePlayAppId, image } = req.body;
+  const appStoreId = parseInt(req.body.appStoreId, 10);
 
   // name 문자열인지 공백인지
   if (typeof name !== 'string') {
@@ -410,10 +371,8 @@ route.post('/sites', async (req, res) => {
 
   // 존재하는 name, googlePlayAppId, appStoreId 있는지
   const queryResult = await Sites.find(
-    {
-      $or: [{ name }, { googlePlayAppId }, { appStoreId }]
-    },
-    (err, site) => {
+    { $or: [{ name }, { googlePlayAppId }, { appStoreId }] },
+    err => {
       if (err) throw err;
     }
   );
@@ -436,55 +395,49 @@ route.post('/sites', async (req, res) => {
   }
 
   // site 저장
-  let site = new Sites({
+  const site = new Sites({ name, googlePlayAppId, appStoreId, image });
+  await site.save(async err => {
+    if (err) throw err;
+  });
+
+  // db 저장후에 스키마 모델 생성
+  const Detail = createDetailModel(name);
+  const Review = createReviewModel(name);
+
+  // 스크랩 시작
+  scraping({
     name,
     googlePlayAppId,
+    googlePlayPage: 112,
     appStoreId,
-    image
+    appStorePage: 10,
+    image,
+    Detail,
+    Review
   });
-  site.save(async err => {
-    if (err) throw err;
 
-    // db 저장후에 스키마 모델 생성
-    await createDetailModel(name);
-    await createReviewModel(name);
-
-    // 스크랩 시작
-    // await scheduler({
-    //   name,
-    //   googlePlayAppId,
-    //   googlePlayPage: 112,
-    //   appStoreId,
-    //   appStorePage: 10,
-    //   Detail: mongoose.model(`Detail-${name}`),
-    //   Review: mongoose.model(`Review-${name}`)
-    // });
-
-    console.log(`[SERVER] site ${name} created!!`);
-    return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
-  });
+  console.log(`[SERVER] site ${name} created!!`);
+  return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
 });
 
 /**
  * PUT sites 수정
  */
 route.put('/sites', async (req, res) => {
-  const data = req.body;
-  const name = data.name;
-  const googlePlayAppId = data.googlePlayAppId;
-  const appStoreId = data.appStoreId;
+  const { name, googlePlayAppId, appStoreId } = req.body;
 
   console.log('GET /api/modify 사이트 수정', name);
   console.log(mongoose.Types.ObjectId.isValid(name));
 
-  res.send('modify');
+  return res.send('modify');
 });
 
 /**
  * DELETE sites 삭제
  */
 route.delete('/sites/:name', async (req, res) => {
-  const name = req.params.name;
+  const { name } = req.params;
+
   console.log('GET /api/delete 사이트 삭제', name);
 
   res.send('delete');
@@ -511,7 +464,7 @@ route.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'worng password' });
   }
 
-  let session = req.session;
+  const session = req.session;
   session.logingInfo = { username };
 
   return res.send({ success: true });
@@ -521,7 +474,7 @@ route.post('/login', async (req, res) => {
  * GET logout 로그아웃
  */
 route.get('/logout', async (req, res) => {
-  let session = req.session;
+  const session = req.session;
   session.destroy(err => {
     if (err) throw err;
     return res.redirect('/');

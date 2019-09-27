@@ -406,7 +406,6 @@ var AppScraperUi = (function(window, document, $) {
           if (data.details !== '') {
             _this.parserDetails(data.details);
           }
-
           _this.parserReview(data.review_android, 'android');
           _this.parserReview(data.review_ios, 'ios');
 
@@ -500,8 +499,7 @@ function loginSet() {
       success: function(data, textStatus, jqXHR) {
         console.log(data);
         if (data.success) {
-          alert('로그인 성공');
-          location.href = '/';
+          location.href = '/admin';
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {

@@ -8,10 +8,8 @@ route.get('/', async (req, res) => {
     sites.length === 0
       ? false
       : sites.reduce((acc, data) => {
-          acc.push({
-            name: data.name,
-            image: data.image
-          });
+          const { name, image } = data;
+          acc.push({ name, image });
           return acc;
         }, []);
 
@@ -20,7 +18,7 @@ route.get('/', async (req, res) => {
 
 route.get('/:site', async (req, res) => {
   const logingInfo = req.session.logingInfo || false;
-  const site = req.params.site;
+  const { site } = req.params;
 
   switch (site) {
     case 'admin':
@@ -46,8 +44,12 @@ route.get('/:site', async (req, res) => {
     default:
       const list = await getApi('/sites');
       const target = list.filter(data => data.name === site);
-      const image = target[0].image;
-      return res.render('review', { site, image, logingInfo });
+      if (target.length > 0) {
+        const image = target[0].image;
+        return res.render('review', { site, image, logingInfo });
+      } else {
+        return res.redirect('/');
+      }
   }
 });
 
