@@ -151,7 +151,7 @@ const scrapingReviewGooglePlay = async scrapData => {
       console.log(`[SCRAPING] #${name} reviews googlePlay, not updated`);
     } else {
       console.log(
-        `[SCRAPING] #${name} reviews googlePlay, updated(${updatedReviews.length}) review data saved !!`
+        `[SCRAPING/DB] #${name} reviews googlePlay, updated(${updatedReviews.length}) review data saved !!`
       );
     }
     if (androidReview.length > 0) {

@@ -440,7 +440,7 @@ route.delete('/sites/:name', async (req, res) => {
 
   console.log('GET /api/delete 사이트 삭제', name);
 
-  res.send('delete');
+  res.send('DELETE sites 삭제 TEST');
 });
 
 /**
@@ -482,11 +482,14 @@ route.get('/logout', async (req, res) => {
 });
 
 /**
- * TODO
- * 신규 스크랩됬거나 업데이트된 리뷰 조회
- * android는 업데이트, ios는 수정을 하면 기존 리뷰는 지우고 새로 작성
- * 신규 또는 업데이트 된 스크랩 내용을 텔레그램으로 쏴주기
- * 구현방법은 추후 고민
+ * ## TODO
+ * 1. 신규 스크랩됬거나 업데이트된 리뷰 조회
+ * 2. android는 업데이트, ios는 수정을 하면 기존 리뷰는 지우고 새로 작성
+ * 3. 신규 또는 업데이트 된 리뷰중에 평점이 1점, 2점 내용을 텔레그램봇으로 메시지전송
+ * 각 사이트별로 채팅방과 봇이 필요하게됨
+ *
+ *
+ *
  */
 
 module.exports = route;
