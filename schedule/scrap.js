@@ -243,7 +243,9 @@ const scrapingReviewAppStore = async scrapData => {
     if (updatedReviews.length === 0) {
       console.log(`[SCRAPING] #${name} reviews appStore, not updated`);
     } else {
-      console.log(`[SCRAPING] #${name} reviews appStore, updated length: ${updatedReviews.length}`);
+      console.log(
+        `[SCRAPING/DB] #${name} reviews appStore, updated(${updatedReviews.length}) review data saved !!`
+      );
     }
     if (iosReview.length > 0) {
       // DB save
@@ -284,8 +286,7 @@ const scraping = async site => {
     await scrapingDetail(initialState);
     await scrapingReviewGooglePlay(initialState);
     await scrapingReviewAppStore(initialState);
-    console.log(`[SCRAPING/END] #${name} ${currentDate()}
-    `);
+    console.log(`[SCRAPING/END] #${name} ${currentDate()}`);
   } catch (err) {
     console.error(err);
   }
