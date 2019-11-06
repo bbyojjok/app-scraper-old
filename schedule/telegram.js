@@ -22,7 +22,7 @@ const getAlertReview = async chatId => {
   const resIos = await axios.get(`/reviews/hmall/${prevday}/${today}/ios/1`);
 
   // 실제 배포시 서버용 이미지 주소로 변경해야됨
-  //const imageHmallUrl = 'http://localhost:889/images/icon-telegram-hmall-android.png';
+  //const imageHmallUrl = 'http://review.hdmall.com/images/icon-telegram-hmall-android.png';
   // `http://image.thehyundai.com/icon-telegram-hmall-${os}.png`
 
   const reviews = resAndroid.data.concat(resIos.data);
@@ -32,7 +32,7 @@ const getAlertReview = async chatId => {
     const { date, os } = data;
     const { text, userName, score } = data.review;
     const { comment, title, author, rate } = data.review;
-    const imageHmallUrl = `http://localhost:889/images/icon-telegram-hmall-${os}.png`;
+    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png`;
     const caption =
       os === 'android'
         ? `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`
