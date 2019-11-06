@@ -49,12 +49,14 @@ bot.onText(/\/start$/, (msg, match) => {
   alertJob = schedule.scheduleJob('30 8 * * *', () => {
     getAlertReview(chatId);
   });
+  console.log('[TELEGRAM] #평점 1점 앱리뷰 알림을 시작합니다.\n(매일 오전 8시 30분)');
 });
 
 bot.onText(/\/stop$/, (msg, match) => {
   const chatId = msg.chat.id;
   alertJob.cancel();
   bot.sendMessage(chatId, '앱리뷰 알림을 종료 합니다.');
+  console.log('[TELEGRAM] #앱리뷰 알림을 종료 합니다.');
 });
 
 /**

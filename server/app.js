@@ -22,7 +22,8 @@ connection.once('open', () => console.log('[DB] Connected to mongodb server'));
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://127.0.0.1:27017/app-scraper', {
   useNewUrlParser: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useUnifiedTopology: true
 });
 
 app.locals.pretty = true;
