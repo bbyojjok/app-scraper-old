@@ -247,39 +247,55 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
 });
 
 /**
- * GET 리뷰 조회 (몇일부터 몇일까지 조회)
- * /reviews/사이트/from/to/운영체제
- * example: /reviews/hmall/20190301/20190313/android
+ * GET 리뷰 조회 (몇일부터 몇일까지 조회), 텔레그램 메시지 전송용
+ * /reviews/사이트/from/to/운영체제/score
+ * example: /reviews/hmall/20190301/20190313/android/1
  */
-route.get('/reviews/:site/:from?/:to?/:os?', async (req, res) => {
-  const { site, os } = req.params;
+route.get('/reviews/:site/:from?/:to?/:os?/:score?', async (req, res) => {
+  const { site, os, score } = req.params;
   const Review = mongoose.model(`Review-${site}`);
   const today = moment()
     .startOf('day')
     .format();
-  const end = moment()
+  const endday = moment()
     .endOf('day')
     .format();
-  const prevday = moment(end)
+  const prevday = moment(today)
     .subtract(1, 'days')
     .format();
-  const from =
-    req.params.from !== undefined ? moment(req.params.from, 'YYYYMMDD').format() : prevday;
+  const from = req.params.from !== undefined ? moment(req.params.from, 'YYYYMMDD').format() : prevday;
   const to =
     req.params.to !== undefined
       ? req.params.to !== 'today'
         ? moment(req.params.to, 'YYYYMMDD').format()
-        : end
-      : end;
-  const options = { date: { $gte: from, $lte: to } };
+        : endday
+      : endday;
+  const options = {
+    date: { $gte: from, $lte: to },
+    $or: [
+      {
+        'review.score': {
+          $in: score.split('').reduce((acc, data) => {
+            acc.push(parseInt(data, 10));
+            return acc;
+          }, [])
+        }
+      },
+      {
+        'review.rate': {
+          $in: score.split('')
+        }
+      }
+    ]
+  };
   if (os) {
     options.os = os;
   }
 
-  console.log('today:', today);
-  console.log('end:', end);
-  console.log('prevday:', prevday);
-  console.log('options', options);
+  // console.log('today:', today);
+  // console.log('end:', end);
+  // console.log('prevday:', prevday);
+  // console.log('options', options);
 
   const queryResult = await Review.find(options, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
@@ -370,12 +386,9 @@ route.post('/sites', async (req, res) => {
   }
 
   // 존재하는 name, googlePlayAppId, appStoreId 있는지
-  const queryResult = await Sites.find(
-    { $or: [{ name }, { googlePlayAppId }, { appStoreId }] },
-    err => {
-      if (err) throw err;
-    }
-  );
+  const queryResult = await Sites.find({ $or: [{ name }, { googlePlayAppId }, { appStoreId }] }, err => {
+    if (err) throw err;
+  });
   if (queryResult.length > 0) {
     return res.status(400).json({
       error: 'exist name or googlePlayAppId or appStoreId'
@@ -485,10 +498,7 @@ route.get('/logout', async (req, res) => {
  * ## TODO
  * 1. 신규 스크랩됬거나 업데이트된 리뷰 조회
  * 2. android는 업데이트, ios는 수정을 하면 기존 리뷰는 지우고 새로 작성
- * 3. 신규 또는 업데이트 된 리뷰중에 평점이 1점, 2점 내용을 텔레그램봇으로 메시지전송
- * 각 사이트별로 채팅방과 봇이 필요하게됨
- *
- *
+ * 3. 신규 또는 업데이트 된 리뷰중에 평점이 1점 내용을 텔레그램봇으로 메시지전송 (각 사이트별로 채팅방과 봇이 필요하게됨)
  *
  */
 

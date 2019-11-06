@@ -18,6 +18,9 @@ const {
 } = require('./lib');
 moment.locale('ko');
 
+// telegram api apply
+require('./telegram');
+
 let scrapJob;
 
 const scrapingDetailGooglePlay = async scrapData => {
@@ -102,16 +105,7 @@ const scrapingReviewGooglePlay = async scrapData => {
 
       if (queryResult) {
         // 중복된 id값이 있을경우 프로퍼티 비교후에 업데이트
-        const keepProperties = [
-          'id',
-          'userName',
-          'date',
-          'score',
-          'scoreText',
-          'text',
-          'replyDate',
-          'replyText'
-        ];
+        const keepProperties = ['id', 'userName', 'date', 'score', 'scoreText', 'text', 'replyDate', 'replyText'];
         const before = objectKeyAdd(queryResult.review, keepProperties);
         const after = objectKeyAdd(data, keepProperties);
         if (!deepCompare(before, undefinedToNull(after))) {
@@ -150,18 +144,14 @@ const scrapingReviewGooglePlay = async scrapData => {
     if (updatedReviews.length === 0) {
       console.log(`[SCRAPING] #${name} reviews googlePlay, not updated`);
     } else {
-      console.log(
-        `[SCRAPING/DB] #${name} reviews googlePlay, updated(${updatedReviews.length}) review data saved !!`
-      );
+      console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated(${updatedReviews.length}) review data saved !!`);
     }
     if (androidReview.length > 0) {
       // DB save
       await Review.insertMany(androidReview, err => {
         if (err) throw err;
       });
-      console.log(
-        `[SCRAPING/DB] #${name} googlePlay new(${androidReview.length}) reviews data saved !!`
-      );
+      console.log(`[SCRAPING/DB] #${name} googlePlay new(${androidReview.length}) reviews data saved !!`);
     } else {
       console.log(`[SCRAPING] #${name} reviews googlePlay, no new review`);
     }
@@ -243,9 +233,7 @@ const scrapingReviewAppStore = async scrapData => {
     if (updatedReviews.length === 0) {
       console.log(`[SCRAPING] #${name} reviews appStore, not updated`);
     } else {
-      console.log(
-        `[SCRAPING/DB] #${name} reviews appStore, updated(${updatedReviews.length}) review data saved !!`
-      );
+      console.log(`[SCRAPING/DB] #${name} reviews appStore, updated(${updatedReviews.length}) review data saved !!`);
     }
     if (iosReview.length > 0) {
       // DB save
