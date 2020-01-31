@@ -6,16 +6,7 @@ const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
 const appStoreReviews = require('../appStoreLibrary/app-store-reviews');
 const appStoreRatingsAverages = require('../appStoreLibrary/app-store-ratings-averages');
-const {
-  getRandom,
-  strToDate,
-  deepCompare,
-  undefinedToNull,
-  objectKeyRemove,
-  objectKeyAdd,
-  getCronRule,
-  currentDate
-} = require('./lib');
+const { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, objectKeyAdd, getCronRule, currentDate } = require('./lib');
 moment.locale('ko');
 
 // telegram api apply

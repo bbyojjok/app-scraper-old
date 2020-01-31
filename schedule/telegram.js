@@ -5,6 +5,7 @@ dotenv.config();
 const moment = require('moment');
 moment.locale('ko');
 process.env.NTBA_FIX_319 = 1;
+
 const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -20,23 +21,19 @@ const getAlertReview = async chatId => {
     .format('YYYYMMDD');
   const resAndroid = await axios.get(`/reviews/hmall/${prevday}/${today}/android/1`);
   const resIos = await axios.get(`/reviews/hmall/${prevday}/${today}/ios/1`);
+  const reviews = resAndroid.data.concat(resIos.data);
 
   // 실제 배포시 서버용 이미지 주소로 변경해야됨
   //const imageHmallUrl = 'http://review.hdmall.com/images/icon-telegram-hmall-android.png';
   // `http://image.thehyundai.com/icon-telegram-hmall-${os}.png`
-
-  const reviews = resAndroid.data.concat(resIos.data);
   console.log('## reviews:', reviews);
   for (let i = 0, len = reviews.length; i < len; i++) {
     const data = reviews[i];
     const { date, os } = data;
     const { text, userName, score } = data.review;
     const { comment, title, author, rate } = data.review;
-    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png`;
-    const caption =
-      os === 'android'
-        ? `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`
-        : `# ${moment(date).format('YYYY. MM. DD')}\n\n${comment}`;
+    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png?ver=1`;
+    const caption = `\n# ${moment(date).format('YYYY. MM. DD')}\n\n${os === 'android' ? text : comment}\n`;
 
     await bot.sendPhoto(chatId, imageHmallUrl, { caption });
   }
@@ -44,12 +41,11 @@ const getAlertReview = async chatId => {
 
 bot.onText(/\/start$/, (msg, match) => {
   const chatId = msg.chat.id;
-
   bot.sendMessage(chatId, '평점 1점 앱리뷰 알림을 시작합니다.\n(매일 오전 8시 30분)');
   alertJob = schedule.scheduleJob('30 8 * * *', () => {
     getAlertReview(chatId);
   });
-  console.log('[TELEGRAM] #평점 1점 앱리뷰 알림을 시작합니다.\n(매일 오전 8시 30분)');
+  console.log('[TELEGRAM] #평점 1점 앱리뷰 알림을 시작합니다. (매일 오전 8시 30분)');
 });
 
 bot.onText(/\/stop$/, (msg, match) => {

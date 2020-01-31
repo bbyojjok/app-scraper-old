@@ -3,8 +3,7 @@
 /******************************************************************************
 ***  reset
 ******************************************************************************/
-html,
-body {
+html, body {
   -webkit-text-size-adjust: none;
 }
 body {
@@ -13,54 +12,25 @@ body {
   color: #333;
   line-height: 1;
 }
-body,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-ul,
-ol,
-li,
-dl,
-dt,
-dd,
-p,
-form,
-fieldset,
-input,
-table,
-tr,
-th,
-td {
+body, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, p, form, fieldset, input, table, tr, th, td {
   margin: 0;
   padding: 0;
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
   font-size: 1em;
 }
-ol,
-ul {
+ol, ul {
   list-style: none;
 }
-fieldset,
-img {
+fieldset, img {
   border: none;
 }
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-a:link,
-a:visited,
-a:active {
+a:link, a:visited, a:active {
   color: #666;
   text-decoration: none;
 }
@@ -93,27 +63,12 @@ input.checkbox {
 }
 
 /* html5 */
-article,
-aside,
-canvas,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section,
-summary,
-mark {
+article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, mark {
   display: block;
 }
 
 /* blind */
-caption,
-legend,
-.blind {
+caption, legend, .blind {
   position: absolute;
   width: 0;
   height: 0;
@@ -181,8 +136,8 @@ legend,
 #header .btnLogin {
   left: auto;
   right: 10px;
-  background: url('/images/icon-login.png') no-repeat 0 0;
-  background-size: 32px auto;
+  background: url('/images/icon-login.png') no-repeat center center;
+  background-size: 28px auto;
 }
 
 #siteWrap {
@@ -640,7 +595,6 @@ button.btnTop {
   #siteWrap img {
     height: 22px;
   }
-
   .reviewsWrap > div {
     float: none;
     width: 100%;
@@ -658,11 +612,9 @@ button.btnTop {
   .reviewsBox {
     height: auto !important;
   }
-
   button.btnTop {
     display: inline-block;
   }
-
   #sitesWrap ul li a img {
     height: 22px;
   }
