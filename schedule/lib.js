@@ -205,13 +205,4 @@ const getCronRule = () => {
  */
 const currentDate = () => moment().format('YYYY.MM.DD HH:mm:ss');
 
-module.exports = {
-  getRandom,
-  strToDate,
-  deepCompare,
-  undefinedToNull,
-  objectKeyRemove,
-  objectKeyAdd,
-  getCronRule,
-  currentDate
-};
+module.exports = { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, objectKeyAdd, getCronRule, currentDate };

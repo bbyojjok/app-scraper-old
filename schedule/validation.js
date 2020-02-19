@@ -19,13 +19,10 @@ const validationAppStoreId = async appStoreId => {
 
 const validationAppid = async ({ googlePlayAppId, appStoreId }) => {
   try {
-    const resultGooglePlay = await validationGooglePlayAppId(googlePlayAppId);
-    const resultAppStore = await validationAppStoreId(appStoreId);
-
-    if (!resultGooglePlay) {
+    if (!(await validationGooglePlayAppId(googlePlayAppId))) {
       return { failure: 'googlePlayAppId' };
     }
-    if (!resultAppStore) {
+    if (!(await validationAppStoreId(appStoreId))) {
       return { failure: 'appStoreId' };
     }
     return { success: true };

@@ -1,5 +1,4 @@
 const schedule = require('node-schedule');
-const axios = require('axios');
 const dotenv = require('dotenv');
 dotenv.config();
 const moment = require('moment');
@@ -11,32 +10,35 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 let alertJob;
+const hmallNewReviews = [];
+
+const setNewReviews = (name, data, result) => {
+  const starRate = parseInt(data.score, 10) === 1 || parseInt(data.rate, 10) === 1;
+  if (name === 'hmall' && starRate) {
+    hmallNewReviews.push(result);
+  }
+};
+
+const clearNewReviews = () => {
+  while (hmallNewReviews.length > 0) {
+    hmallNewReviews.pop();
+  }
+};
 
 const getAlertReview = async chatId => {
-  const today = moment()
-    .startOf('day')
-    .format('YYYYMMDD');
-  const prevday = moment(today)
-    .subtract(1, 'days')
-    .format('YYYYMMDD');
-  const resAndroid = await axios.get(`/reviews/hmall/${prevday}/${today}/android/1`);
-  const resIos = await axios.get(`/reviews/hmall/${prevday}/${today}/ios/1`);
-  const reviews = resAndroid.data.concat(resIos.data);
-
   // 실제 배포시 서버용 이미지 주소로 변경해야됨
   //const imageHmallUrl = 'http://review.hdmall.com/images/icon-telegram-hmall-android.png';
   // `http://image.thehyundai.com/icon-telegram-hmall-${os}.png`
-  console.log('## reviews:', reviews);
-  for (let i = 0, len = reviews.length; i < len; i++) {
-    const data = reviews[i];
-    const { date, os } = data;
-    const { text, userName, score } = data.review;
-    const { comment, title, author, rate } = data.review;
-    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png?ver=1`;
-    const caption = `\n# ${moment(date).format('YYYY. MM. DD')}\n\n${os === 'android' ? text : comment}\n`;
 
+  // 건별 텔레그램 메시지 전송
+  for (let i = 0, len = hmallNewReviews.length; i < len; i++) {
+    const { date, os, review } = hmallNewReviews[i];
+    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png?ver=1`;
+    const text = os === 'android' ? review.text : review.comment;
+    const caption = `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`;
     await bot.sendPhoto(chatId, imageHmallUrl, { caption });
   }
+  clearNewReviews();
 };
 
 bot.onText(/\/start$/, (msg, match) => {
@@ -54,6 +56,8 @@ bot.onText(/\/stop$/, (msg, match) => {
   bot.sendMessage(chatId, '앱리뷰 알림을 종료 합니다.');
   console.log('[TELEGRAM] #앱리뷰 알림을 종료 합니다.');
 });
+
+module.exports = { setNewReviews };
 
 /**
  * #### TODO ####
@@ -74,5 +78,4 @@ bot.onText(/\/stop$/, (msg, match) => {
  * ## 4번
  * 1점짜리 리뷰가 수집되지 않을 경우 안내 메시지
  * ------------------------------------------------------------
- *
  */

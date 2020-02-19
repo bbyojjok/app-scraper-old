@@ -10,18 +10,13 @@ const { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, obj
 moment.locale('ko');
 
 // telegram api apply
-require('./telegram');
-
+const { setNewReviews } = require('./telegram');
 let scrapJob;
 
 const scrapingDetailGooglePlay = async scrapData => {
   try {
     const { name, googlePlayAppId } = scrapData.site;
-    const result = await googlePlay.app({
-      appId: googlePlayAppId,
-      lang: 'ko',
-      country: 'kr'
-    });
+    const result = await googlePlay.app({ appId: googlePlayAppId, lang: 'ko', country: 'kr' });
     console.log(`[SCRAPING] #${name} get detail googlePlay`);
     return result;
   } catch (err) {
@@ -66,12 +61,7 @@ const scrapingDetail = async scrapData => {
 const getReviewGooglePlay = async ({ num, scrapData }) => {
   try {
     const { name, googlePlayAppId } = scrapData.site;
-    const reviews = await googlePlay.reviews({
-      appId: googlePlayAppId,
-      lang: 'ko',
-      sort: googlePlay.sort.NEWEST,
-      num
-    });
+    const reviews = await googlePlay.reviews({ appId: googlePlayAppId, lang: 'ko', sort: googlePlay.sort.NEWEST, num });
     console.log(`[SCRAPING] #${name} get reviews googlePlay, num: ${num}`);
     return reviews;
   } catch (err) {
@@ -116,16 +106,23 @@ const scrapingReviewGooglePlay = async scrapData => {
             }
           );
           updatedReviews.push(updateResult);
+
+          // hmall 평점1점 리뷰 배열에 담기
+          setNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated review idx: ${idx}`);
         }
       } else {
-        accumulator.push({
+        const newResult = {
           name,
           review: undefinedToNull(data),
           os: 'android',
           date: data.date,
           created: moment().format()
-        });
+        };
+        accumulator.push(newResult);
+
+        // hmall 평점1점 리뷰 배열에 담기
+        setNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews googlePlay, new review idx: ${idx}`);
       }
 
@@ -156,11 +153,7 @@ const scrapingReviewGooglePlay = async scrapData => {
 const getReviewAppStore = async ({ page, scrapData }) => {
   try {
     const { name, appStoreId } = scrapData.site;
-    const reviews = await appStoreReviews({
-      id: appStoreId,
-      country: 'kr',
-      page
-    });
+    const reviews = await appStoreReviews({ id: appStoreId, country: 'kr', page });
     console.log(`[SCRAPING] #${name} get reviews appStore, page: ${page}`);
     return reviews;
   } catch (err) {
@@ -205,16 +198,23 @@ const scrapingReviewAppStore = async scrapData => {
             }
           );
           updatedReviews.push(updateResult);
+
+          // hmall 평점1점 리뷰 배열에 담기
+          setNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews appStore, updated review idx: ${idx}`);
         }
       } else {
-        accumulator.push({
+        const newResult = {
           name,
           review: undefinedToNull(data),
           os: 'ios',
           date: strToDate(data.updated),
           created: moment().format()
-        });
+        };
+        accumulator.push(newResult);
+
+        // hmall 평점1점 리뷰 배열에 담기
+        setNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews appStore, new review idx: ${idx}`);
       }
 
