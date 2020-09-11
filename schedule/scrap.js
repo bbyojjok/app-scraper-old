@@ -63,7 +63,7 @@ const getReviewGooglePlay = async ({ num, scrapData }) => {
     const { name, googlePlayAppId } = scrapData.site;
     const reviews = await googlePlay.reviews({ appId: googlePlayAppId, lang: 'ko', sort: googlePlay.sort.NEWEST, num });
     console.log(`[SCRAPING] #${name} get reviews googlePlay, num: ${num}`);
-    return reviews;
+    return reviews.data;
   } catch (err) {
     console.error(err);
     scrapData.review.googlePlay.isError = true;
@@ -292,19 +292,15 @@ const sitesScrapingStart = async () => {
 };
 
 const scheduler = site => {
-  if (site) {
-    scraping(site);
-  } else {
-    // sitesScrapingStart();
+  sitesScrapingStart();
 
-    // 스케쥴 등록
-    scrapJob = schedule.scheduleJob(getCronRule(), () => {
-      sitesScrapingStart();
-      // 스캐쥴 취소 후, 7시간 이후 다시 스케쥴 등록
-      scrapJob.cancel();
-      setTimeout(() => scrapJob.reschedule(getCronRule()), 1000 * 60 * 60 * 7);
-    });
-  }
+  // 스케쥴 등록
+  scrapJob = schedule.scheduleJob(getCronRule(), () => {
+    sitesScrapingStart();
+    // 스캐쥴 취소 후, 7시간 이후 다시 스케쥴 등록
+    scrapJob.cancel();
+    setTimeout(() => scrapJob.reschedule(getCronRule()), 1000 * 60 * 60 * 7);
+  });
 };
 
 module.exports = { scheduler, scraping };
