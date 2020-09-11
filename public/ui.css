@@ -234,6 +234,12 @@ h2 > img {
   vertical-align: middle;
   display: inline-block;
 }
+h2 > a > img {
+  width: 45px;
+  margin: 0 5px 5px 0;
+  vertical-align: middle;
+  display: inline-block;
+}
 
 ul {
   margin-bottom: 15px;
