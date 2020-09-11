@@ -6,34 +6,30 @@ moment.locale('ko');
 process.env.NTBA_FIX_319 = 1;
 
 const TelegramBot = require('node-telegram-bot-api');
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const token = process.env.TELEGRAM_BOT_TOKEN_THEHYUNDAI;
 const bot = new TelegramBot(token, { polling: true });
 
 let alertJob;
-const hmallNewReviews = [];
+const ThehyundaiNewReviews = [];
 
-const setNewReviews = (name, data, result) => {
+const setThehyundaiNewReviews = (name, data, result) => {
   const starRate = parseInt(data.score, 10) === 1 || parseInt(data.rate, 10) === 1;
   if (name === 'hmall' && starRate) {
-    hmallNewReviews.push(result);
+    ThehyundaiNewReviews.push(result);
   }
 };
 
 const clearNewReviews = () => {
-  while (hmallNewReviews.length > 0) {
-    hmallNewReviews.pop();
+  while (ThehyundaiNewReviews.length > 0) {
+    ThehyundaiNewReviews.pop();
   }
 };
 
 const getAlertReview = async chatId => {
-  // 실제 배포시 서버용 이미지 주소로 변경해야됨
-  //const imageHmallUrl = 'http://review.hdmall.com/images/icon-telegram-hmall-android.png';
-  // `http://image.thehyundai.com/icon-telegram-hmall-${os}.png`
-
   // 건별 텔레그램 메시지 전송
-  for (let i = 0, len = hmallNewReviews.length; i < len; i++) {
-    const { date, os, review } = hmallNewReviews[i];
-    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-hmall-${os}.png?ver=1`;
+  for (let i = 0, len = ThehyundaiNewReviews.length; i < len; i++) {
+    const { date, os, review } = ThehyundaiNewReviews[i];
+    const imageHmallUrl = `http://review.hdmall.com/images/icon-thehyundai-telegram-${os}.png?ver=1`;
     const text = os === 'android' ? review.text : review.comment;
     const caption = `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`;
     await bot.sendPhoto(chatId, imageHmallUrl, { caption });
@@ -57,7 +53,7 @@ bot.onText(/\/stop$/, (msg, match) => {
   console.log('[TELEGRAM] #앱리뷰 알림을 종료 합니다.');
 });
 
-module.exports = { setNewReviews };
+module.exports = { setThehyundaiNewReviews };
 
 /**
  * #### TODO ####

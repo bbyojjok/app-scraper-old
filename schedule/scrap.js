@@ -10,7 +10,8 @@ const { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, obj
 moment.locale('ko');
 
 // telegram api apply
-const { setNewReviews } = require('./telegram');
+const { setHmallNewReviews } = require('./telegramHmall');
+const { setThehyundaiNewReviews } = require('./telegramThehyundai');
 let scrapJob;
 
 const scrapingDetailGooglePlay = async scrapData => {
@@ -108,7 +109,8 @@ const scrapingReviewGooglePlay = async scrapData => {
           updatedReviews.push(updateResult);
 
           // hmall 평점1점 리뷰 배열에 담기
-          setNewReviews(name, data, updateResult);
+          setHmallNewReviews(name, data, updateResult);
+          setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated review idx: ${idx}`);
         }
       } else {
@@ -122,7 +124,8 @@ const scrapingReviewGooglePlay = async scrapData => {
         accumulator.push(newResult);
 
         // hmall 평점1점 리뷰 배열에 담기
-        setNewReviews(name, data, newResult);
+        setHmallNewReviews(name, data, newResult);
+        setThehyundaiNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews googlePlay, new review idx: ${idx}`);
       }
 
@@ -200,7 +203,8 @@ const scrapingReviewAppStore = async scrapData => {
           updatedReviews.push(updateResult);
 
           // hmall 평점1점 리뷰 배열에 담기
-          setNewReviews(name, data, updateResult);
+          setHmallNewReviews(name, data, updateResult);
+          setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews appStore, updated review idx: ${idx}`);
         }
       } else {
@@ -214,7 +218,8 @@ const scrapingReviewAppStore = async scrapData => {
         accumulator.push(newResult);
 
         // hmall 평점1점 리뷰 배열에 담기
-        setNewReviews(name, data, newResult);
+        setHmallNewReviews(name, data, newResult);
+        setThehyundaiNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews appStore, new review idx: ${idx}`);
       }
 
@@ -292,6 +297,7 @@ const sitesScrapingStart = async () => {
 };
 
 const scheduler = site => {
+  // 스크랩 시작
   sitesScrapingStart();
 
   // 스케쥴 등록
