@@ -29,7 +29,7 @@ const getAlertReview = async chatId => {
   // 건별 텔레그램 메시지 전송
   for (let i = 0, len = ThehyundaiNewReviews.length; i < len; i++) {
     const { date, os, review } = ThehyundaiNewReviews[i];
-    const imageHmallUrl = `http://review.hdmall.com/images/icon-thehyundai-telegram-${os}.png?ver=1`;
+    const imageHmallUrl = `http://review.hdmall.com/images/icon-telegram-thehyundai-${os}.png`;
     const text = os === 'android' ? review.text : review.comment;
     const caption = `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`;
     await bot.sendPhoto(chatId, imageHmallUrl, { caption });
