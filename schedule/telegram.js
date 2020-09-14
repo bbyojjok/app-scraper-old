@@ -35,7 +35,7 @@ const getAlertReview = async (chatId, { newReviews, name, bot }) => {
     const text = os === 'android' ? review.text : review.comment;
     const caption = `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`;
     await bot.sendPhoto(chatId, imageUrl, { caption });
-    console.log(`[TELEGRAM] #${name} 앱리뷰 전송`, caption);
+    console.log(`[TELEGRAM] #${name} newReviews sendPhoto`, caption);
   }
   clearReviews(newReviews);
 };
@@ -61,6 +61,7 @@ const setNewReviews = (name, data, result) => {
   telegramSites.forEach(site => {
     if (name === site.name && starRate) {
       site.newReviews.push(result);
+      console.log(`[TELEGRAM] #${site.name} get newReviews`);
     }
   });
 };
