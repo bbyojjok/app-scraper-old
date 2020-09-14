@@ -35,23 +35,24 @@ const getAlertReview = async (chatId, { newReviews, name, bot }) => {
     const text = os === 'android' ? review.text : review.comment;
     const caption = `# ${moment(date).format('YYYY. MM. DD')}\n\n${text}`;
     await bot.sendPhoto(chatId, imageUrl, { caption });
+    console.log(`[TELEGRAM] #${name} 앱리뷰 전송`, caption);
   }
   clearReviews(newReviews);
 };
 
 telegramSites.forEach(site => {
-  const { bot, alertJob } = site;
+  const { bot, alertJob, name } = site;
   bot.onText(/\/start$/, (msg, match) => {
     const chatId = msg.chat.id;
     alertJob = schedule.scheduleJob('30 8 * * *', () => getAlertReview(chatId, site));
     bot.sendMessage(chatId, '평점 1점 앱리뷰 알림을 시작합니다.\n(매일 오전 8시 30분)');
-    console.log('[TELEGRAM] #평점 1점 앱리뷰 알림을 시작합니다. (매일 오전 8시 30분)');
+    console.log(`[TELEGRAM] #${name} 평점 1점 앱리뷰 알림을 시작합니다. (매일 오전 8시 30분)`);
   });
   bot.onText(/\/stop$/, (msg, match) => {
     const chatId = msg.chat.id;
     alertJob.cancel();
     bot.sendMessage(chatId, '앱리뷰 알림을 종료 합니다.');
-    console.log('[TELEGRAM] #앱리뷰 알림을 종료 합니다.');
+    console.log(`[TELEGRAM] #${name} 앱리뷰 알림을 종료 합니다.`);
   });
 });
 
