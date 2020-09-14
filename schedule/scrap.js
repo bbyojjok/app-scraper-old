@@ -10,7 +10,7 @@ const { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, obj
 moment.locale('ko');
 
 // telegram api apply
-const { setNewReviews } = require('./telegram');
+const { getNewReviews } = require('./telegram');
 const scrapJob;
 
 const scrapingDetailGooglePlay = async scrapData => {
@@ -108,7 +108,7 @@ const scrapingReviewGooglePlay = async scrapData => {
           updatedReviews.push(updateResult);
 
           // 텔레그램 메시지전송 리뷰 닫김
-          setNewReviews(name, data, updateResult);
+          getNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated review idx: ${idx}`);
         }
       } else {
@@ -122,7 +122,7 @@ const scrapingReviewGooglePlay = async scrapData => {
         accumulator.push(newResult);
 
         // 텔레그램 메시지전송 리뷰 닫김
-        setNewReviews(name, data, newResult);
+        getNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews googlePlay, new review idx: ${idx}`);
       }
 
@@ -200,7 +200,7 @@ const scrapingReviewAppStore = async scrapData => {
           updatedReviews.push(updateResult);
 
           // 텔레그램 메시지전송 리뷰 닫김
-          setNewReviews(name, data, updateResult);
+          getNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews appStore, updated review idx: ${idx}`);
         }
       } else {
@@ -214,7 +214,7 @@ const scrapingReviewAppStore = async scrapData => {
         accumulator.push(newResult);
 
         // 텔레그램 메시지전송 리뷰 닫김
-        setNewReviews(name, data, newResult);
+        getNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews appStore, new review idx: ${idx}`);
       }
 
