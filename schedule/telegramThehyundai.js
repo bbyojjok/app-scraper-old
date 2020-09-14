@@ -14,7 +14,7 @@ const ThehyundaiNewReviews = [];
 
 const setThehyundaiNewReviews = (name, data, result) => {
   const starRate = parseInt(data.score, 10) === 1 || parseInt(data.rate, 10) === 1;
-  if (name === 'hmall' && starRate) {
+  if (name === 'thehyundai' && starRate) {
     ThehyundaiNewReviews.push(result);
   }
 };

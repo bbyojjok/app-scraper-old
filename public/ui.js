@@ -170,8 +170,16 @@ var AppScraperUi = (function (window, document, $) {
     parserDetails: function (data) {
       this.$reviewsWrapDivFirst.find('.version').text(data.android.version).end().find('.star').text(data.android.scoreText);
       this.$reviewsWrapDivSecond.find('.version').text(data.ios.version).end().find('.star').text(data.ios.ratingsAverages);
-      this.$reviewsWrapDivFirst.find('.reviewsTitle a').attr('href', data.android.url);
-      this.$reviewsWrapDivSecond.find('.reviewsTitle a').attr('href', data.ios.url);
+      if (data.android) {
+        this.$reviewsWrapDivFirst.find('.reviewsTitle a').attr('href', data.android.url);
+      } else {
+        this.$reviewsWrapDivFirst.find('.reviewsTitle a').removeAttr('href');
+      }
+      if (data.ios) {
+        this.$reviewsWrapDivSecond.find('.reviewsTitle a').attr('href', data.ios.url);
+      } else {
+        this.$reviewsWrapDivSecond.find('.reviewsTitle a').removeAttr('href');
+      }
     },
 
     /**
