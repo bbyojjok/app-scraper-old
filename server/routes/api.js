@@ -39,16 +39,10 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
   const { site, date, score, os } = req.params;
   const Review = mongoose.model(`Review-${site}`);
   // 오늘까지
-  const today = moment()
-    .startOf('day')
-    .format();
+  const today = moment().startOf('day').format();
   // 오늘 자정까지
-  const end = moment()
-    .endOf('day')
-    .format();
-  const prevday = moment(end)
-    .subtract(date, 'days')
-    .format();
+  const end = moment().endOf('day').format();
+  const prevday = moment(end).subtract(date, 'days').format();
   const options = {
     date: {
       $gte: prevday,
@@ -103,9 +97,7 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
 route.get('/xlsx/:site/:date?', async (req, res) => {
   const { site, date } = req.params;
   const url = `/review/${site}/${date}/12345/`;
-  const today = moment()
-    .startOf('day')
-    .format('YYYYMMDD');
+  const today = moment().startOf('day').format('YYYYMMDD');
   const now = new Date().valueOf();
   const folder = makeDir.sync(`public/downloads/${today}/`);
   const file = `downloads/${today}/reviews_${site}_${date}_${now}.xlsx`;
@@ -124,61 +116,28 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
   });
 
   // android sheet
-  ws1
-    .cell(1, 1)
-    .string('평점')
-    .style(style_head);
-  ws1
-    .cell(1, 2)
-    .string('날짜')
-    .style(style_head);
-  ws1
-    .cell(1, 3)
-    .string('리뷰')
-    .style(style_head);
-  ws1
-    .cell(1, 4)
-    .string('작성자')
-    .style(style_head);
+  ws1.cell(1, 1).string('평점').style(style_head);
+  ws1.cell(1, 2).string('날짜').style(style_head);
+  ws1.cell(1, 3).string('리뷰').style(style_head);
+  ws1.cell(1, 4).string('작성자').style(style_head);
   ws1.column(1).setWidth(10);
   ws1.column(2).setWidth(15);
   ws1.column(3).setWidth(100);
   ws1.column(4).setWidth(30);
-  ws1
-    .row(1)
-    .setHeight(30)
-    .filter();
+  ws1.row(1).setHeight(30).filter();
 
   // ios sheet
-  ws2
-    .cell(1, 1)
-    .string('평점')
-    .style(style_head);
-  ws2
-    .cell(1, 2)
-    .string('날짜')
-    .style(style_head);
-  ws2
-    .cell(1, 3)
-    .string('제목')
-    .style(style_head);
-  ws2
-    .cell(1, 4)
-    .string('리뷰')
-    .style(style_head);
-  ws2
-    .cell(1, 5)
-    .string('작성자')
-    .style(style_head);
+  ws2.cell(1, 1).string('평점').style(style_head);
+  ws2.cell(1, 2).string('날짜').style(style_head);
+  ws2.cell(1, 3).string('제목').style(style_head);
+  ws2.cell(1, 4).string('리뷰').style(style_head);
+  ws2.cell(1, 5).string('작성자').style(style_head);
   ws2.column(1).setWidth(10);
   ws2.column(2).setWidth(15);
   ws2.column(3).setWidth(60);
   ws2.column(4).setWidth(100);
   ws2.column(5).setWidth(30);
-  ws2
-    .row(1)
-    .setHeight(30)
-    .filter();
+  ws2.row(1).setHeight(30).filter();
 
   const data = await getApi(url);
   const data_anroid = data.filter(val => val.os === 'android');
@@ -186,26 +145,14 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     data_anroid.forEach((data, i) => {
       const num = i + 2;
       const { score, date, text, userName } = data.review;
-      ws1
-        .cell(num, 1)
-        .string(score.toString())
-        .style(style_right);
-      ws1
-        .cell(num, 2)
-        .string(date)
-        .style(style_right);
+      ws1.cell(num, 1).string(score.toString()).style(style_right);
+      ws1.cell(num, 2).string(date).style(style_right);
       ws1.cell(num, 3).string(text);
-      ws1
-        .cell(num, 4)
-        .string(userName)
-        .style(style_right);
+      ws1.cell(num, 4).string(userName).style(style_right);
     });
   } else {
     ws1.row(2).setHeight(80);
-    ws1
-      .cell(2, 1, 2, 4, true)
-      .string('조회된 리뷰가 없습니다.')
-      .style(style_center);
+    ws1.cell(2, 1, 2, 4, true).string('조회된 리뷰가 없습니다.').style(style_center);
   }
 
   const data_ios = data.filter(val => val.os === 'ios');
@@ -213,27 +160,15 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     data_ios.forEach((data, i) => {
       const num = i + 2;
       const { rate, updated, title, comment, author } = data.review;
-      ws2
-        .cell(num, 1)
-        .string(rate)
-        .style(style_right);
-      ws2
-        .cell(num, 2)
-        .string(updated)
-        .style(style_right);
+      ws2.cell(num, 1).string(rate).style(style_right);
+      ws2.cell(num, 2).string(updated).style(style_right);
       ws2.cell(num, 3).string(title);
       ws2.cell(num, 4).string(comment);
-      ws2
-        .cell(num, 5)
-        .string(author)
-        .style(style_right);
+      ws2.cell(num, 5).string(author).style(style_right);
     });
   } else {
     ws2.row(2).setHeight(80);
-    ws2
-      .cell(2, 1, 2, 5, true)
-      .string('조회된 리뷰가 없습니다.')
-      .style(style_center);
+    ws2.cell(2, 1, 2, 5, true).string('조회된 리뷰가 없습니다.').style(style_center);
   }
 
   // 엑셀 저장
@@ -254,22 +189,11 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
 route.get('/reviews/:site/:from?/:to?/:os?/:score?', async (req, res) => {
   const { site, os, score } = req.params;
   const Review = mongoose.model(`Review-${site}`);
-  const today = moment()
-    .startOf('day')
-    .format();
-  const endday = moment()
-    .endOf('day')
-    .format();
-  const prevday = moment(today)
-    .subtract(1, 'days')
-    .format();
+  const today = moment().startOf('day').format();
+  const endday = moment().endOf('day').format();
+  const prevday = moment(today).subtract(1, 'days').format();
   const from = req.params.from !== undefined ? moment(req.params.from, 'YYYYMMDD').format() : prevday;
-  const to =
-    req.params.to !== undefined
-      ? req.params.to !== 'today'
-        ? moment(req.params.to, 'YYYYMMDD').format()
-        : endday
-      : endday;
+  const to = req.params.to !== undefined ? (req.params.to !== 'today' ? moment(req.params.to, 'YYYYMMDD').format() : endday) : endday;
   const options = {
     date: { $gte: from, $lte: to },
     $or: [
@@ -418,16 +342,7 @@ route.post('/sites', async (req, res) => {
   const Review = createReviewModel(name);
 
   // 스크랩 시작
-  scraping({
-    name,
-    googlePlayAppId,
-    googlePlayPage: 112,
-    appStoreId,
-    appStorePage: 10,
-    image,
-    Detail,
-    Review
-  });
+  scraping({ name, googlePlayAppId, googlePlayPage: 112, appStoreId, appStorePage: 10, image, Detail, Review });
 
   console.log(`[SERVER] site ${name} created!!`);
   return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
