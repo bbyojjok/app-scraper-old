@@ -4,6 +4,7 @@ const makeDir = require('make-dir');
 const xl = require('excel4node');
 const { getApi } = require('../lib');
 const Sites = require('../models/sites');
+const SitesOrder = require('../models/sitesOrder.js');
 const { createDetailModel, createReviewModel } = require('../models/lib');
 const validationAppid = require('../../schedule/validation');
 const { scraping } = require('../../schedule/scrap');
@@ -241,6 +242,34 @@ route.post('/', async (req, res) => {
     review_ios: await getApi(review_ios)
   };
   return res.send(result);
+});
+
+/**
+ * GET sitesOrder 조회
+ */
+route.get('/sitesOrder', async (req, res) => {
+  const queryResult = await SitesOrder.findOne({}, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  }).sort({ created: -1 });
+  return res.send(queryResult);
+});
+
+/**
+ * POST sitesOrder 생성
+ * req.body : { order }
+ * example : "order": [0, 1, 2, 3, 4, ...]
+ */
+route.post('/sitesOrder', async (req, res) => {
+  const { order } = req.body;
+
+  // site 저장
+  const sitesOrder = new SitesOrder({ order });
+  await sitesOrder.save(async err => {
+    if (err) throw err;
+  });
+
+  console.log(`[SERVER] sitesOrder created!!`);
+  return res.json({ success: true, order });
 });
 
 /**
