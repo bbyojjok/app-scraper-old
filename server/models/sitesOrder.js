@@ -9,10 +9,6 @@ const SitesOrder = new Schema(
     created: {
       type: Date,
       default: moment().format()
-    },
-    updated: {
-      type: Date,
-      default: moment().format()
     }
   },
   { collection: 'sites-order' }

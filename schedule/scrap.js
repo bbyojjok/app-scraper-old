@@ -6,12 +6,11 @@ const googlePlay = require('google-play-scraper');
 const appStore = require('app-store-scraper');
 const appStoreReviews = require('../appStoreLibrary/app-store-reviews');
 const appStoreRatingsAverages = require('../appStoreLibrary/app-store-ratings-averages');
-const { getRandom, strToDate, deepCompare, undefinedToNull, objectKeyRemove, objectKeyAdd, getCronRule, currentDate } = require('./lib');
+const { strToDate, deepCompare, undefinedToNull, objectKeyAdd, getCronRule, currentDate, objectKeyRemove, getRandom } = require('./lib');
 moment.locale('ko');
 
 // telegram api apply
 const { getNewReviews } = require('./telegram');
-let scrapJob;
 
 const scrapingDetailGooglePlay = async scrapData => {
   try {
@@ -291,12 +290,12 @@ const sitesScrapingStart = async () => {
   }
 };
 
-const scheduler = site => {
+const scheduler = () => {
   // 스크랩 시작
   // sitesScrapingStart();
 
   // 스케쥴 등록
-  scrapJob = schedule.scheduleJob(getCronRule(), () => {
+  const scrapJob = schedule.scheduleJob(getCronRule(), () => {
     sitesScrapingStart();
     // 스캐쥴 취소 후, 3시간 이후 다시 스케쥴 등록
     scrapJob.cancel();
