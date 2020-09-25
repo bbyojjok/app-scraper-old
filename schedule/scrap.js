@@ -10,7 +10,9 @@ const { strToDate, deepCompare, undefinedToNull, objectKeyAdd, getCronRule, curr
 moment.locale('ko');
 
 // telegram api apply
-const { getNewReviews } = require('./telegram');
+// const { getNewReviews } = require('./telegram');
+const { setHmallNewReviews } = require('./telegramHmall');
+const { setThehyundaiNewReviews } = require('./telegramThehyundai');
 
 const scrapingDetailGooglePlay = async scrapData => {
   try {
@@ -107,7 +109,9 @@ const scrapingReviewGooglePlay = async scrapData => {
           updatedReviews.push(updateResult);
 
           // 텔레그램 메시지전송 리뷰 닫김
-          getNewReviews(name, data, updateResult);
+          // getNewReviews(name, data, updateResult);
+          setHmallNewReviews(name, data, updateResult);
+          setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated review idx: ${idx}`);
         }
       } else {
@@ -121,7 +125,9 @@ const scrapingReviewGooglePlay = async scrapData => {
         accumulator.push(newResult);
 
         // 텔레그램 메시지전송 리뷰 닫김
-        getNewReviews(name, data, newResult);
+        // getNewReviews(name, data, newResult);
+        setHmallNewReviews(name, data, newResult);
+        setThehyundaiNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews googlePlay, new review idx: ${idx}`);
       }
 
@@ -199,7 +205,9 @@ const scrapingReviewAppStore = async scrapData => {
           updatedReviews.push(updateResult);
 
           // 텔레그램 메시지전송 리뷰 닫김
-          getNewReviews(name, data, updateResult);
+          // getNewReviews(name, data, updateResult);
+          setHmallNewReviews(name, data, updateResult);
+          setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews appStore, updated review idx: ${idx}`);
         }
       } else {
@@ -213,7 +221,9 @@ const scrapingReviewAppStore = async scrapData => {
         accumulator.push(newResult);
 
         // 텔레그램 메시지전송 리뷰 닫김
-        getNewReviews(name, data, newResult);
+        // getNewReviews(name, data, newResult);
+        setHmallNewReviews(name, data, newResult);
+        setThehyundaiNewReviews(name, data, newResult);
         console.log(`[SCRAPING] #${name} reviews appStore, new review idx: ${idx}`);
       }
 
