@@ -40,7 +40,8 @@ const sendNewReviews = async (chatId, { newReviews, name, bot }) => {
   clearReviews(newReviews);
 };
 
-telegramSites.forEach(site => {
+for (let i = 0, len = telegramSites.length; i < len; i++) {
+  const site = telegramSites[i];
   const { bot, alertJob, name } = site;
   bot.onText(/\/start$/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -54,7 +55,7 @@ telegramSites.forEach(site => {
     bot.sendMessage(chatId, '앱리뷰 알림을 종료 합니다.');
     console.log(`[TELEGRAM] #${name} 앱리뷰 알림을 종료 합니다.`);
   });
-});
+}
 
 const getNewReviews = (name, data, result) => {
   const starRate = parseInt(data.score, 10) === 1 || parseInt(data.rate, 10) === 1;
