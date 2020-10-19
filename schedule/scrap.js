@@ -110,8 +110,8 @@ const scrapingReviewGooglePlay = async scrapData => {
 
           // 텔레그램 메시지전송 리뷰 닫김
           // getNewReviews(name, data, updateResult);
-          setHmallNewReviews(name, data, updateResult);
-          setThehyundaiNewReviews(name, data, updateResult);
+          // setHmallNewReviews(name, data, updateResult);
+          // setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews googlePlay, updated review idx: ${idx}`);
         }
       } else {
@@ -206,8 +206,8 @@ const scrapingReviewAppStore = async scrapData => {
 
           // 텔레그램 메시지전송 리뷰 닫김
           // getNewReviews(name, data, updateResult);
-          setHmallNewReviews(name, data, updateResult);
-          setThehyundaiNewReviews(name, data, updateResult);
+          // setHmallNewReviews(name, data, updateResult);
+          // setThehyundaiNewReviews(name, data, updateResult);
           console.log(`[SCRAPING/DB] #${name} reviews appStore, updated review idx: ${idx}`);
         }
       } else {
