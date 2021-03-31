@@ -158,7 +158,7 @@ const scrapingReviewGooglePlay = async scrapData => {
 const getReviewAppStore = async ({ page, scrapData }) => {
   try {
     const { name, appStoreId } = scrapData.site;
-    const reviews = await appStore.reviews({ id: appStoreId, country: 'kr', page });
+    const reviews = await appStoreReviews({ id: appStoreId, country: 'kr', page });
     console.log(`[SCRAPING] #${name} get reviews appStore, page: ${page}`);
     return reviews;
   } catch (err) {
