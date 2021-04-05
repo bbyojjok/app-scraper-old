@@ -1,11 +1,15 @@
 const axios = require('axios');
 const parseStringPromise = require('xml2js').parseStringPromise;
 
+function replaceAll(str, searchStr, replaceStr) {
+  return str.split(searchStr).join(replaceStr);
+}
+
 const appStoreReview = async ({ id, country, page }) => {
   try {
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/page=${page}/id=${id}/sortby=mostrecent/xml`;
     const res = await axios.get(url);
-    const data = await parseStringPromise(res.data);
+    const data = await parseStringPromise(replaceAll(res.data, '<</', '</'));
     const entry = data['feed']['entry'];
 
     if (entry) {
