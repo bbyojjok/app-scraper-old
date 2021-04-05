@@ -3,7 +3,7 @@ const parseStringPromise = require('xml2js').parseStringPromise;
 
 const appStoreReview = async ({ id, country, page }) => {
   try {
-    const url = `https://itunes.apple.com/rss/customerreviews/page=${page}/id=${id}/sortby=mostrecent/xml?cc=${country}`;
+    const url = `https://itunes.apple.com/${country}/rss/customerreviews/page=${page}/id=${id}/sortby=mostrecent/xml`;
     const res = await axios.get(url);
     const data = await parseStringPromise(res.data);
     const entry = data['feed']['entry'];
