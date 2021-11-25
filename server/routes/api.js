@@ -245,6 +245,7 @@ route.post('/', async (req, res) => {
 });
 
 /**
+ * TODO 사이트 오더순서 로직 확인하기
  * GET sitesOrder 조회
  */
 route.get('/sitesOrder', async (req, res) => {
@@ -255,6 +256,7 @@ route.get('/sitesOrder', async (req, res) => {
 });
 
 /**
+ * TODO 사이트 오더순서 로직 확인하기
  * POST sitesOrder 생성
  * req.body : { order }
  * example : "order": [0, 1, 2, 3, 4, ...]
@@ -275,11 +277,35 @@ route.post('/sitesOrder', async (req, res) => {
 /**
  * GET sites 조회
  */
+function alignData(data) {
+  var fixedHead = ['hmall', 'thehyundai', 'cjmall'];
+  var headArr = data.filter(function (v) {
+    return this.indexOf(v.name) >= 0;
+  }, fixedHead);
+  var bodyArr = data.filter(function (v) {
+    return this.indexOf(v.name) < 0;
+  }, fixedHead);
+  return headArr.concat(bodyArr);
+}
+
 route.get('/sites', async (req, res) => {
   const queryResult = await Sites.find({}, err => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   });
-  return res.send(queryResult);
+
+  const fixedName = ['hmall', 'thehyundai', 'tohome'];
+  const topArr = new Array(fixedName.length).fill(0);
+  const bodyArr = queryResult.reduce((acc, current) => {
+    if (fixedName.indexOf(current.name) >= 0) {
+      topArr[fixedName.indexOf(current.name)] = current;
+    } else {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+  const resultData = topArr.concat(bodyArr);
+
+  return res.send(resultData);
 });
 
 /**
@@ -398,6 +424,41 @@ route.delete('/sites/:name', async (req, res) => {
   console.log('GET /api/delete 사이트 삭제', name);
 
   res.send('DELETE sites 삭제 TEST');
+});
+
+/**
+ * GET 사이트 순서 id 만들기
+ */
+route.get('/sitesOrderInit', async (req, res) => {
+  // const { name, googlePlayAppId, appStoreId } = req.body;
+
+  const queryResult = await Sites.find({}, err => {
+    if (err) return res.status(401).send(`DB Error: ${err}`);
+  });
+
+  for (let i = 0; i < queryResult.length; i++) {
+    console.log('===================================================================================');
+    console.log(`# index number: ${i}`);
+    console.log(queryResult[i]);
+  }
+
+  /*
+  const updateResult = await Sites.updateMany(
+    {},
+    {
+      $set: {
+        
+      }
+    },
+    { new: true },
+    err => {
+      if (err) throw err;
+    }
+  );
+  console.log(updateResult);
+  */
+
+  return res.send(queryResult);
 });
 
 /**
