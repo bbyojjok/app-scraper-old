@@ -3,33 +3,65 @@
 /******************************************************************************
 ***  reset
 ******************************************************************************/
-html, body {
+html,
+body {
   -webkit-text-size-adjust: none;
 }
 body {
-  font: 12px 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font: 12px "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
   color: #333;
   line-height: 1;
 }
-body, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, p, form, fieldset, input, table, tr, th, td {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+li,
+dl,
+dt,
+dd,
+p,
+form,
+fieldset,
+input,
+table,
+tr,
+th,
+td {
   margin: 0;
   padding: 0;
 }
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: normal;
   font-size: 1em;
 }
-ol, ul {
+ol,
+ul {
   list-style: none;
 }
-fieldset, img {
+fieldset,
+img {
   border: none;
 }
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-a:link, a:visited, a:active {
+a:link,
+a:visited,
+a:active {
   color: #666;
   text-decoration: none;
 }
@@ -52,7 +84,7 @@ input.checkbox {
 
 /* clear */
 .clear:after {
-  content: '';
+  content: "";
   clear: both;
   display: block;
   visibility: hidden;
@@ -62,12 +94,27 @@ input.checkbox {
 }
 
 /* html5 */
-article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, mark {
+article,
+aside,
+canvas,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+summary,
+mark {
   display: block;
 }
 
 /* blind */
-caption, legend, .blind {
+caption,
+legend,
+.blind {
   position: absolute;
   width: 0;
   height: 0;
@@ -117,25 +164,25 @@ caption, legend, .blind {
   line-height: 0;
 }
 #header .btnBack {
-  background: url('/images/icon-back.png') no-repeat 0 0;
+  background: url("/images/icon-back.png") no-repeat 0 0;
   background-size: 32px auto;
 }
 #header .btnAdmin {
   left: auto;
   right: 55px;
-  background: url('/images/icon-admin.png') no-repeat 0 0;
+  background: url("/images/icon-admin.png") no-repeat 0 0;
   background-size: 32px auto;
 }
 #header .btnLogout {
   left: auto;
   right: 10px;
-  background: url('/images/icon-logout.png') no-repeat 0 0;
+  background: url("/images/icon-logout.png") no-repeat 0 0;
   background-size: 32px auto;
 }
 #header .btnLogin {
   left: auto;
   right: 10px;
-  background: url('/images/icon-login.png') no-repeat center center;
+  background: url("/images/icon-login.png") no-repeat center center;
   background-size: 28px auto;
 }
 
@@ -146,7 +193,7 @@ caption, legend, .blind {
 #siteWrap img {
   vertical-align: middle;
   width: auto;
-  height: 30px;
+  height: 22px;
 }
 
 .btnBox {
@@ -188,7 +235,7 @@ caption, legend, .blind {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.19), 0 1px 3px rgba(0, 0, 0, 0.23);
 }
 .btnBox > div label.checked:before {
-  content: '';
+  content: "";
   display: block;
   width: 3px;
   height: 100%;
@@ -215,7 +262,7 @@ caption, legend, .blind {
   width: 34px;
   height: 34px;
   border: 0;
-  background: url('/images/icon-excel.png') no-repeat 0 0;
+  background: url("/images/icon-excel.png") no-repeat 0 0;
   background-size: 34px auto;
   font-size: 0;
   line-height: 0;
@@ -281,7 +328,7 @@ ul.reviews.ios > li {
   padding: 0 20px 20px 20px;
 }
 .reviewsWrap:after {
-  content: '';
+  content: "";
   display: block;
   clear: both;
 }
@@ -289,7 +336,7 @@ ul.reviews.ios > li {
   display: block;
 }
 .reviewsWrap h2:after {
-  content: '';
+  content: "";
   display: block;
   clear: both;
 }
@@ -316,13 +363,13 @@ ul.reviews.ios > li {
   font-weight: 600;
 }
 .reviewsWrap h2 .etc-box .score:before {
-  content: '';
+  content: "";
   display: inline-block;
   vertical-align: middle;
   margin-right: 5px;
   width: 16px;
   height: 20px;
-  background: url('/images/icon-star.png') no-repeat 0 0;
+  background: url("/images/icon-star.png") no-repeat 0 0;
   background-size: 16px auto;
 }
 .reviewsWrap h2 .etc-box .score span {
@@ -475,7 +522,7 @@ button.btnTop {
 #sitesWrap ul li a img {
   vertical-align: middle;
   width: auto;
-  height: 30px;
+  height: 22px;
 }
 #sitesWrap ul li a:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.19), 0 2px 6px rgba(0, 0, 0, 0.23);
@@ -562,8 +609,8 @@ button.btnTop {
 #adminWrap .areaRegister .inputBox .item {
   padding: 5px 0;
 }
-#adminWrap .areaRegister .inputBox .item input[type='text'],
-#adminWrap .areaRegister .inputBox .item input[type='password'] {
+#adminWrap .areaRegister .inputBox .item input[type="text"],
+#adminWrap .areaRegister .inputBox .item input[type="password"] {
   display: inline-block;
   vertical-align: middle;
   width: 100%;
@@ -583,6 +630,13 @@ button.btnTop {
 #adminWrap .areaRegister .inputBox .item #uploadImage img {
   width: auto;
   height: 44px;
+}
+#adminWrap .areaRegister .inputBox .item .txt {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+  font-size: 12px;
+  color: #000;
 }
 #adminWrap .areaRegister .btnRegisterBox {
   padding-left: 15px;

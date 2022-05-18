@@ -13,6 +13,7 @@ block contents
         div(class='item')
           input(type='text' name='appStoreId' placeholder='appstore id')
         div(class='item')
+          span(class='txt') 이미지 높이 44px 권장
           input(id='fileUploadInput'
             type='file'
             name='image'
@@ -24,7 +25,7 @@ block contents
     ul(class='areaList')
       -for (var i=0, len = sites.length; i < len; i++)
         li
-          a(href='/'+sites[i].name title=sites[i].name+' 리뷰 보러가기')
+          a(href='/'+sites[i].name title=sites[i].name+' 리뷰 보러가기' target='_blank')
             span(class='top')
               span(class='num') /* #{i + 1} */
               //span(class='btnArea')
