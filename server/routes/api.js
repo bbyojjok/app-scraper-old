@@ -1,27 +1,27 @@
-const route = require('express').Router();
-const mongoose = require('mongoose');
-const makeDir = require('make-dir');
-const xl = require('excel4node');
-const { getApi } = require('../lib');
-const Sites = require('../models/sites');
-const SitesOrder = require('../models/sitesOrder.js');
-const { createDetailModel, createReviewModel } = require('../models/lib');
-const validationAppid = require('../../schedule/validation');
-const { scraping } = require('../../schedule/scrap');
-const dotenv = require('dotenv');
+const route = require("express").Router();
+const mongoose = require("mongoose");
+const makeDir = require("make-dir");
+const xl = require("excel4node");
+const { getApi } = require("../lib");
+const Sites = require("../models/sites");
+const SitesOrder = require("../models/sitesOrder.js");
+const { createDetailModel, createReviewModel } = require("../models/lib");
+const validationAppid = require("../../schedule/validation");
+const { scraping } = require("../../schedule/scrap");
+const dotenv = require("dotenv");
 dotenv.config();
-const moment = require('moment');
-moment.locale('ko');
+const moment = require("moment");
+moment.locale("ko");
 
 /**
  * GET 상세내용 조회
  * /details/사이트/운영체제
  * example: /details/hmall/android
  */
-route.get('/details/:site/:os?', async (req, res) => {
+route.get("/details/:site/:os?", async (req, res) => {
   const { site, os } = req.params;
   const Detail = mongoose.model(`Detail-${site}`);
-  const queryResult = await Detail.findOne({}, err => {
+  const queryResult = await Detail.findOne({}, (err) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ created: -1 });
   if (os) {
@@ -36,52 +36,54 @@ route.get('/details/:site/:os?', async (req, res) => {
  * /review/사이트/요일/평점/운영체제
  * example: /review/hmall/7/1/android
  */
-route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
+route.get("/review/:site/:date?/:score?/:os?", async (req, res) => {
   const { site, date, score, os } = req.params;
   const Review = mongoose.model(`Review-${site}`);
   // 오늘까지
-  const today = moment().startOf('day').format();
+  const today = moment().startOf("day").format();
   // 오늘 자정까지
-  const end = moment().endOf('day').format();
-  const prevday = moment(end).subtract(date, 'days').format();
+  const end = moment().endOf("day").format();
+  const prevday = moment(end).subtract(date, "days").format();
   const options = {
     date: {
       $gte: prevday,
-      $lte: end
+      $lte: end,
     },
     $or: [
       {
-        'review.score': {
-          $in: score.split('').reduce((acc, data) => {
+        "review.score": {
+          $in: score.split("").reduce((acc, data) => {
             acc.push(parseInt(data, 10));
             return acc;
-          }, [])
-        }
+          }, []),
+        },
       },
       {
-        'review.rate': {
-          $in: score.split('')
-        }
-      }
-    ]
+        "review.rate": {
+          $in: score.split(""),
+        },
+      },
+    ],
   };
   if (os) {
     options.os = os;
   }
 
-  const queryResult = await Review.find(options, err => {
+  const queryResult = await Review.find(options, (err) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
   const result = await queryResult.reduce((acc, data) => {
     if (data.review.updated !== undefined) {
-      data.review.updated = moment(data.date).format('YYYY. MM. DD');
+      data.review.updated = moment(data.date).format("YYYY. MM. DD");
     }
     if (data.review.date !== undefined) {
-      data.review.date = moment(data.date).format('YYYY. MM. DD');
+      data.review.date = moment(data.date).format("YYYY. MM. DD");
     }
     if (data.review.replyDate !== null && data.review.replyDate !== undefined) {
-      data.review.replyDate = moment(new Date(data.review.replyDate)).format('YYYY. MM. DD');
+      data.review.replyDate = moment(new Date(data.review.replyDate)).format(
+        "YYYY. MM. DD"
+      );
     }
     acc.push(data);
     return acc;
@@ -95,10 +97,10 @@ route.get('/review/:site/:date?/:score?/:os?', async (req, res) => {
  * /xlsx/사이트/요일
  * example: /xlsx/hmall/7
  */
-route.get('/xlsx/:site/:date?', async (req, res) => {
+route.get("/xlsx/:site/:date?", async (req, res) => {
   const { site, date } = req.params;
   const url = `/review/${site}/${date}/12345/`;
-  const today = moment().startOf('day').format('YYYYMMDD');
+  const today = moment().startOf("day").format("YYYYMMDD");
   const now = new Date().valueOf();
   const folder = makeDir.sync(`public/downloads/${today}/`);
   const file = `downloads/${today}/reviews_${site}_${date}_${now}.xlsx`;
@@ -108,19 +110,19 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
   const ws1 = wb.addWorksheet(`android - ${date}일 이전`);
   const ws2 = wb.addWorksheet(`ios - ${date}일 이전`);
   const style_head = wb.createStyle({
-    font: { bold: true, color: '#000000', size: 13 },
-    alignment: { horizontal: ['center'], vertical: ['center'] }
+    font: { bold: true, color: "#000000", size: 13 },
+    alignment: { horizontal: ["center"], vertical: ["center"] },
   });
-  const style_right = wb.createStyle({ alignment: { horizontal: ['right'] } });
+  const style_right = wb.createStyle({ alignment: { horizontal: ["right"] } });
   const style_center = wb.createStyle({
-    alignment: { horizontal: ['center'], vertical: ['center'] }
+    alignment: { horizontal: ["center"], vertical: ["center"] },
   });
 
   // android sheet
-  ws1.cell(1, 1).string('평점').style(style_head);
-  ws1.cell(1, 2).string('날짜').style(style_head);
-  ws1.cell(1, 3).string('리뷰').style(style_head);
-  ws1.cell(1, 4).string('작성자').style(style_head);
+  ws1.cell(1, 1).string("평점").style(style_head);
+  ws1.cell(1, 2).string("날짜").style(style_head);
+  ws1.cell(1, 3).string("리뷰").style(style_head);
+  ws1.cell(1, 4).string("작성자").style(style_head);
   ws1.column(1).setWidth(10);
   ws1.column(2).setWidth(15);
   ws1.column(3).setWidth(100);
@@ -128,11 +130,11 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
   ws1.row(1).setHeight(30).filter();
 
   // ios sheet
-  ws2.cell(1, 1).string('평점').style(style_head);
-  ws2.cell(1, 2).string('날짜').style(style_head);
-  ws2.cell(1, 3).string('제목').style(style_head);
-  ws2.cell(1, 4).string('리뷰').style(style_head);
-  ws2.cell(1, 5).string('작성자').style(style_head);
+  ws2.cell(1, 1).string("평점").style(style_head);
+  ws2.cell(1, 2).string("날짜").style(style_head);
+  ws2.cell(1, 3).string("제목").style(style_head);
+  ws2.cell(1, 4).string("리뷰").style(style_head);
+  ws2.cell(1, 5).string("작성자").style(style_head);
   ws2.column(1).setWidth(10);
   ws2.column(2).setWidth(15);
   ws2.column(3).setWidth(60);
@@ -141,7 +143,7 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
   ws2.row(1).setHeight(30).filter();
 
   const data = await getApi(url);
-  const data_anroid = data.filter(val => val.os === 'android');
+  const data_anroid = data.filter((val) => val.os === "android");
   if (data_anroid.length > 0) {
     data_anroid.forEach((data, i) => {
       const num = i + 2;
@@ -153,10 +155,13 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     });
   } else {
     ws1.row(2).setHeight(80);
-    ws1.cell(2, 1, 2, 4, true).string('조회된 리뷰가 없습니다.').style(style_center);
+    ws1
+      .cell(2, 1, 2, 4, true)
+      .string("조회된 리뷰가 없습니다.")
+      .style(style_center);
   }
 
-  const data_ios = data.filter(val => val.os === 'ios');
+  const data_ios = data.filter((val) => val.os === "ios");
   if (data_ios.length > 0) {
     data_ios.forEach((data, i) => {
       const num = i + 2;
@@ -169,7 +174,10 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
     });
   } else {
     ws2.row(2).setHeight(80);
-    ws2.cell(2, 1, 2, 5, true).string('조회된 리뷰가 없습니다.').style(style_center);
+    ws2
+      .cell(2, 1, 2, 5, true)
+      .string("조회된 리뷰가 없습니다.")
+      .style(style_center);
   }
 
   // 엑셀 저장
@@ -187,31 +195,39 @@ route.get('/xlsx/:site/:date?', async (req, res) => {
  * /reviews/사이트/from/to/운영체제/score
  * example: /reviews/hmall/20190301/20190313/android/1
  */
-route.get('/reviews/:site/:from?/:to?/:os?/:score?', async (req, res) => {
+route.get("/reviews/:site/:from?/:to?/:os?/:score?", async (req, res) => {
   const { site, os, score } = req.params;
   const Review = mongoose.model(`Review-${site}`);
-  const today = moment().startOf('day').format();
-  const endday = moment().endOf('day').format();
-  const prevday = moment(today).subtract(1, 'days').format();
-  const from = req.params.from !== undefined ? moment(req.params.from, 'YYYYMMDD').format() : prevday;
-  const to = req.params.to !== undefined ? (req.params.to !== 'today' ? moment(req.params.to, 'YYYYMMDD').format() : endday) : endday;
+  const today = moment().startOf("day").format();
+  const endday = moment().endOf("day").format();
+  const prevday = moment(today).subtract(1, "days").format();
+  const from =
+    req.params.from !== undefined
+      ? moment(req.params.from, "YYYYMMDD").format()
+      : prevday;
+  const to =
+    req.params.to !== undefined
+      ? req.params.to !== "today"
+        ? moment(req.params.to, "YYYYMMDD").format()
+        : endday
+      : endday;
   const options = {
     date: { $gte: from, $lte: to },
     $or: [
       {
-        'review.score': {
-          $in: score.split('').reduce((acc, data) => {
+        "review.score": {
+          $in: score.split("").reduce((acc, data) => {
             acc.push(parseInt(data, 10));
             return acc;
-          }, [])
-        }
+          }, []),
+        },
       },
       {
-        'review.rate': {
-          $in: score.split('')
-        }
-      }
-    ]
+        "review.rate": {
+          $in: score.split(""),
+        },
+      },
+    ],
   };
   if (os) {
     options.os = os;
@@ -222,7 +238,7 @@ route.get('/reviews/:site/:from?/:to?/:os?/:score?', async (req, res) => {
   // console.log('prevday:', prevday);
   // console.log('options', options);
 
-  const queryResult = await Review.find(options, err => {
+  const queryResult = await Review.find(options, (err) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ date: -1 });
 
@@ -234,12 +250,12 @@ route.get('/reviews/:site/:from?/:to?/:os?/:score?', async (req, res) => {
  * req.body : { details, review_android, review_ios }
  * example: /
  */
-route.post('/', async (req, res) => {
+route.post("/", async (req, res) => {
   const { details, review_android, review_ios } = req.body;
   const result = {
     details: await getApi(details),
     review_android: await getApi(review_android),
-    review_ios: await getApi(review_ios)
+    review_ios: await getApi(review_ios),
   };
   return res.send(result);
 });
@@ -248,8 +264,8 @@ route.post('/', async (req, res) => {
  * TODO 사이트 오더순서 로직 확인하기
  * GET sitesOrder 조회
  */
-route.get('/sitesOrder', async (req, res) => {
-  const queryResult = await SitesOrder.findOne({}, err => {
+route.get("/sitesOrder", async (req, res) => {
+  const queryResult = await SitesOrder.findOne({}, (err) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   }).sort({ created: -1 });
   return res.send(queryResult);
@@ -261,12 +277,12 @@ route.get('/sitesOrder', async (req, res) => {
  * req.body : { order }
  * example : "order": [0, 1, 2, 3, 4, ...]
  */
-route.post('/sitesOrder', async (req, res) => {
+route.post("/sitesOrder", async (req, res) => {
   const { order } = req.body;
 
   // site 저장
   const sitesOrder = new SitesOrder({ order });
-  await sitesOrder.save(async err => {
+  await sitesOrder.save(async (err) => {
     if (err) throw err;
   });
 
@@ -278,7 +294,7 @@ route.post('/sitesOrder', async (req, res) => {
  * GET sites 조회
  */
 function alignData(data) {
-  var fixedHead = ['hmall', 'thehyundai', 'cjmall'];
+  var fixedHead = ["hmall", "thehyundai", "cjmall"];
   var headArr = data.filter(function (v) {
     return this.indexOf(v.name) >= 0;
   }, fixedHead);
@@ -288,12 +304,10 @@ function alignData(data) {
   return headArr.concat(bodyArr);
 }
 
-route.get('/sites', async (req, res) => {
-  const queryResult = await Sites.find({}, err => {
-    if (err) return res.status(401).send(`DB Error: ${err}`);
-  });
+route.get("/sites", async (req, res) => {
+  const queryResult = await Sites.find({}).exec();
 
-  const fixedName = ['hmall', 'thehyundai', 'tohome'];
+  const fixedName = ["hmall", "thehyundai", "tohome"];
   const topArr = new Array(fixedName.length).fill(0);
   const bodyArr = queryResult.reduce((acc, current) => {
     if (fixedName.indexOf(current.name) >= 0) {
@@ -317,78 +331,81 @@ route.get('/sites', async (req, res) => {
       "appStoreId": 870397981
     }
  */
-route.post('/sites', async (req, res) => {
+route.post("/sites", async (req, res) => {
   const { name, googlePlayAppId, image } = req.body;
   const appStoreId = parseInt(req.body.appStoreId, 10);
 
   // name 문자열인지 공백인지
-  if (typeof name !== 'string') {
+  if (typeof name !== "string") {
     return res.status(400).json({
-      error: 'not string name'
+      error: "not string name",
     });
   }
-  if (name === '') {
+  if (name === "") {
     return res.status(400).json({
-      error: 'empty name'
+      error: "empty name",
     });
   }
 
   // googlePlayAppId 문자열인지 공백인지
-  if (typeof googlePlayAppId !== 'string') {
+  if (typeof googlePlayAppId !== "string") {
     return res.status(400).json({
-      error: 'not string googlePlayAppId'
+      error: "not string googlePlayAppId",
     });
   }
-  if (googlePlayAppId === '') {
+  if (googlePlayAppId === "") {
     return res.status(400).json({
-      error: 'empty googlePlayAppId'
+      error: "empty googlePlayAppId",
     });
   }
 
   // appStoreId 숫자인지
-  if (typeof appStoreId !== 'number') {
+  if (typeof appStoreId !== "number") {
     return res.status(400).json({
-      error: 'not number appStoreId'
+      error: "not number appStoreId",
     });
   }
 
   // image 문자열인지 공백인지
-  if (typeof image !== 'string') {
+  if (typeof image !== "string") {
     return res.status(400).json({
-      error: 'not string image'
+      error: "not string image",
     });
   }
-  if (image === '') {
+  if (image === "") {
     return res.status(400).json({
-      error: 'empty image'
+      error: "empty image",
     });
   }
 
   // 존재하는 name, googlePlayAppId, appStoreId 있는지
-  const queryResult = await Sites.find({ $or: [{ name }, { googlePlayAppId }, { appStoreId }] }, err => {
-    if (err) throw err;
-  });
+  const queryResult = await Sites.find(
+    { $or: [{ name }, { googlePlayAppId }, { appStoreId }] },
+    (err) => {
+      if (err) throw err;
+    }
+  );
   if (queryResult.length > 0) {
     return res.status(400).json({
-      error: 'exist name or googlePlayAppId or appStoreId'
+      error: "exist name or googlePlayAppId or appStoreId",
     });
   }
 
   // googlePlayAppId, appStoreId 유효한지
   const validation = await validationAppid({ googlePlayAppId, appStoreId });
-  if (validation.failure === 'googlePlayAppId') {
+  if (validation.failure === "googlePlayAppId") {
     return res.status(400).json({
-      error: 'googlePlayAppId validation failed'
+      error: "googlePlayAppId validation failed",
     });
-  } else if (validation.failure === 'appStoreId') {
+  } else if (validation.failure === "appStoreId") {
     return res.status(400).json({
-      error: 'appStoreId validation failed'
+      error: "appStoreId validation failed",
     });
   }
 
   // site 저장
   const site = new Sites({ name, googlePlayAppId, appStoreId, image });
-  await site.save(async err => {
+  await site.save(async (err) => {
     if (err) throw err;
   });
 
@@ -397,7 +414,16 @@ route.post('/sites', async (req, res) => {
   const Review = createReviewModel(name);
 
   // 스크랩 시작
-  scraping({ name, googlePlayAppId, googlePlayPage: 112, appStoreId, appStorePage: 10, image, Detail, Review });
+  scraping({
+    name,
+    googlePlayAppId,
+    googlePlayPage: 112,
+    appStoreId,
+    appStorePage: 10,
+    image,
+    Detail,
+    Review,
+  });
 
   console.log(`[SERVER] site ${name} created!!`);
   return res.json({ success: true, name, googlePlayAppId, appStoreId, image });
@@ -406,38 +432,40 @@ route.post('/sites', async (req, res) => {
 /**
  * PUT sites 수정
  */
-route.put('/sites', async (req, res) => {
+route.put("/sites", async (req, res) => {
   const { name, googlePlayAppId, appStoreId } = req.body;
 
-  console.log('GET /api/modify 사이트 수정', name);
+  console.log("GET /api/modify 사이트 수정", name);
   console.log(mongoose.Types.ObjectId.isValid(name));
 
-  return res.send('modify');
+  return res.send("modify");
 });
 
 /**
  * DELETE sites 삭제
  */
-route.delete('/sites/:name', async (req, res) => {
+route.delete("/sites/:name", async (req, res) => {
   const { name } = req.params;
 
-  console.log('GET /api/delete 사이트 삭제', name);
+  console.log("GET /api/delete 사이트 삭제", name);
 
-  res.send('DELETE sites 삭제 TEST');
+  res.send("DELETE sites 삭제 TEST");
 });
 
 /**
  * GET 사이트 순서 id 만들기
  */
-route.get('/sitesOrderInit', async (req, res) => {
+route.get("/sitesOrderInit", async (req, res) => {
   // const { name, googlePlayAppId, appStoreId } = req.body;
 
-  const queryResult = await Sites.find({}, err => {
+  const queryResult = await Sites.find({}, (err) => {
     if (err) return res.status(401).send(`DB Error: ${err}`);
   });
 
   for (let i = 0; i < queryResult.length; i++) {
-    console.log('===================================================================================');
+    console.log(
+      "==================================================================================="
+    );
     console.log(`# index number: ${i}`);
     console.log(queryResult[i]);
   }
@@ -464,22 +492,22 @@ route.get('/sitesOrderInit', async (req, res) => {
 /**
  * POST login 로그인
  */
-route.post('/login', async (req, res) => {
+route.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   // 패스워드 문자열인지 체크
-  if (typeof password !== 'string') {
-    return res.status(401).json({ error: 'not string password' });
+  if (typeof password !== "string") {
+    return res.status(401).json({ error: "not string password" });
   }
 
   // admin 계정이 맞는지 확인
   if (username !== process.env.ADMIN_USERNAME) {
-    return res.status(401).json({ error: 'worng username' });
+    return res.status(401).json({ error: "worng username" });
   }
 
   // 패스워드 맞는지 확인
   if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'worng password' });
+    return res.status(401).json({ error: "worng password" });
   }
 
   const session = req.session;
@@ -491,11 +519,11 @@ route.post('/login', async (req, res) => {
 /**
  * GET logout 로그아웃
  */
-route.get('/logout', async (req, res) => {
+route.get("/logout", async (req, res) => {
   const session = req.session;
-  session.destroy(err => {
+  session.destroy((err) => {
     if (err) throw err;
-    return res.redirect('/');
+    return res.redirect("/");
   });
 });
 
